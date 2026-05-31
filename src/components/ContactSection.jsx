@@ -1,11 +1,18 @@
 import { useState } from 'react';
-import { Phone, MapPin, Mail, Globe, User, Building2, MessageSquare, Send, CheckCircle, AlertCircle } from 'lucide-react';
+import { Phone, MapPin, Mail, Globe, User, Building2, MessageSquare, Send, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { contactContent, siteConfig } from '../data/siteContent';
+import { submitContactForm } from '../lib/supabase';
 import SectionHeading from './SectionHeading';
 import ScrollReveal from './ScrollReveal';
 
 const iconMap = { Phone, MapPin, Mail, Globe };
-const formIconMap = { User, Building2, Phone, MessageSquare };
+
+const formFields = [
+  { key: 'name', type: 'text', icon: User },
+  { key: 'company', type: 'text', icon: Building2 },
+  { key: 'phone', type: 'tel', icon: Phone },
+  { key: 'message', type: 'textarea', icon: MessageSquare, rows: 3 },
+];
 
 const initialForm = { name: '', company: '', phone: '', message: '' };
 const initialErrors = {};
@@ -22,6 +29,8 @@ export default function ContactSection() {
   const [form, setForm] = useState(initialForm);
   const [errors, setErrors] = useState(initialErrors);
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
   const [touched, setTouched] = useState({});
 
   const handleChange = (e) => {
@@ -37,13 +46,25 @@ export default function ContactSection() {
     if (fieldErrors[name]) setErrors((prev) => ({ ...prev, [name]: fieldErrors[name] }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const validationErrors = validate(form);
     setErrors(validationErrors);
     setTouched({ name: true, company: true, phone: true, message: true });
     if (Object.keys(validationErrors).length > 0) return;
-    console.log('商务咨询提交数据:', form);
+
+    setSubmitting(true);
+    setSubmitError(null);
+
+    const result = await submitContactForm(form);
+
+    setSubmitting(false);
+
+    if (!result.success) {
+      setSubmitError(result.error);
+      return;
+    }
+
     setSubmitted(true);
     setForm(initialForm);
     setTouched({});
@@ -112,81 +133,70 @@ export default function ContactSection() {
               ) : (
                 <>
                   <div className="space-y-5">
-                    {['name', 'company'].map((field) => {
-                      const fieldConfig = contactContent.formFields[field];
-                      const FIcon = formIconMap[fieldConfig.icon] || User;
+                    {formFields.map(({ key, type, icon: FIcon, rows }) => {
+                      const fieldConfig = contactContent.formFields[key];
+                      const isTextarea = type === 'textarea';
+                      const required = key !== 'company';
                       return (
-                        <div key={field}>
-                          <label htmlFor={field} className="mb-2 flex items-center gap-2 text-sm font-medium text-graphite-600">
+                        <div key={key}>
+                          <label htmlFor={key} className="mb-2 flex items-center gap-2 text-sm font-medium text-graphite-600">
                             <FIcon size={14} className="text-graphite-400" />
-                            {fieldConfig.label} {field === 'name' && <span className="text-sapphire-500">*</span>}
+                            {fieldConfig.label} {required && <span className="text-sapphire-500">*</span>}
                           </label>
-                          <input
-                            type="text"
-                            id={field}
-                            name={field}
-                            value={form[field]}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            placeholder={fieldConfig.placeholder}
-                            className={inputClass(field)}
-                          />
-                          {fieldError(field) && (
+                          {isTextarea ? (
+                            <textarea
+                              id={key}
+                              name={key}
+                              rows={rows}
+                              value={form[key]}
+                              onChange={handleChange}
+                              onBlur={handleBlur}
+                              placeholder={fieldConfig.placeholder}
+                              className={inputClass(key)}
+                            />
+                          ) : (
+                            <input
+                              type={type}
+                              id={key}
+                              name={key}
+                              value={form[key]}
+                              onChange={handleChange}
+                              onBlur={handleBlur}
+                              placeholder={fieldConfig.placeholder}
+                              className={inputClass(key)}
+                            />
+                          )}
+                          {fieldError(key) && (
                             <p className="mt-1.5 flex items-center gap-1 text-xs text-red-500">
-                              <AlertCircle size={11} /> {fieldError(field)}
+                              <AlertCircle size={11} /> {fieldError(key)}
                             </p>
                           )}
                         </div>
                       );
                     })}
-
-                    <div>
-                      <label htmlFor="phone" className="mb-2 flex items-center gap-2 text-sm font-medium text-graphite-600">
-                        <Phone size={14} className="text-graphite-400" />
-                        {contactContent.formFields.phone.label} <span className="text-sapphire-500">*</span>
-                      </label>
-                      <input
-                        type="tel"
-                        id="phone"
-                        name="phone"
-                        value={form.phone}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        placeholder={contactContent.formFields.phone.placeholder}
-                        className={inputClass('phone')}
-                      />
-                      {fieldError('phone') && (
-                        <p className="mt-1.5 flex items-center gap-1 text-xs text-red-500">
-                          <AlertCircle size={11} /> {fieldError('phone')}
-                        </p>
-                      )}
-                    </div>
-
-                    <div>
-                      <label htmlFor="message" className="mb-2 flex items-center gap-2 text-sm font-medium text-graphite-600">
-                        <MessageSquare size={14} className="text-graphite-400" />
-                        {contactContent.formFields.message.label} <span className="text-sapphire-500">*</span>
-                      </label>
-                      <textarea
-                        id="message"
-                        name="message"
-                        rows={3}
-                        value={form.message}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        placeholder={contactContent.formFields.message.placeholder}
-                        className={inputClass('message')}
-                      />
-                      {fieldError('message') && (
-                        <p className="mt-1.5 flex items-center gap-1 text-xs text-red-500">
-                          <AlertCircle size={11} /> {fieldError('message')}
-                        </p>
-                      )}
-                    </div>
                   </div>
 
-                  <button type="submit" className="btn-primary mt-7 w-full py-3.5 text-base">
-                    <Send size={16} /> 提交咨询
+                  {submitError && (
+                    <div className="mt-4 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+                      <AlertCircle size={16} className="flex-shrink-0" />
+                      {submitError}
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="btn-primary mt-7 w-full py-3.5 text-base disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {submitting ? (
+                      <>
+                        <Loader2 size={16} className="animate-spin" /> 提交中...
+                      </>
+                    ) : (
+                      <>
+                        <Send size={16} /> 提交咨询
+                      </>
+                    )}
                   </button>
                 </>
               )}

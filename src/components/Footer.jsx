@@ -1,11 +1,11 @@
 import { Phone, MapPin, Mail } from 'lucide-react';
 import { siteConfig, footerContent } from '../data/siteContent';
+import { scrollToSection } from '../utils';
 
 export default function Footer() {
   const handleNavClick = (e, href) => {
     e.preventDefault();
-    const el = document.querySelector(href);
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
+    scrollToSection(href);
   };
 
   return (

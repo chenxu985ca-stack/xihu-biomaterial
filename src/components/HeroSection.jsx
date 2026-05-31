@@ -1,5 +1,6 @@
 import { ArrowRight, Award, ShieldCheck, Microscope } from 'lucide-react';
 import { siteConfig } from '../data/siteContent';
+import { scrollToSection } from '../utils';
 
 export default function HeroSection() {
   return (
@@ -56,16 +57,10 @@ export default function HeroSection() {
 
           {/* CTAs */}
           <div className="mt-10 flex flex-wrap gap-4">
-            <a href="#products" onClick={(e) => {
-              e.preventDefault();
-              document.querySelector('#products')?.scrollIntoView({ behavior: 'smooth' });
-            }} className="btn-primary text-base">
+            <a href="#products" onClick={(e) => { e.preventDefault(); scrollToSection('#products'); }} className="btn-primary text-base">
               探索产品 <ArrowRight size={17} />
             </a>
-            <a href="#contact" onClick={(e) => {
-              e.preventDefault();
-              document.querySelector('#contact')?.scrollIntoView({ behavior: 'smooth' });
-            }} className="btn-outline text-base">
+            <a href="#contact" onClick={(e) => { e.preventDefault(); scrollToSection('#contact'); }} className="btn-outline text-base">
               商务合作
             </a>
           </div>
