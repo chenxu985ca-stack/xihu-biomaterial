@@ -1,0 +1,71 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-stone-50 text-graphite-800 font-body antialiased;
+  }
+
+  /* Selection color */
+  ::selection {
+    @apply bg-sapphire/20 text-sapphire-700;
+  }
+}
+
+@layer components {
+  /* Primary CTA button — precision instrument inspired */
+  .btn-primary {
+    @apply relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-lg
+           bg-sapphire px-7 py-3.5 text-sm font-semibold text-white
+           transition-all duration-300
+           hover:bg-sapphire-600 hover:shadow-lg hover:shadow-sapphire/20
+           active:scale-[0.98];
+    letter-spacing: 0.02em;
+  }
+
+  /* Outline button — for secondary actions */
+  .btn-outline {
+    @apply relative inline-flex items-center justify-center gap-2 rounded-lg
+           border border-stone-300 bg-white px-7 py-3.5
+           text-sm font-medium text-graphite-700
+           transition-all duration-300
+           hover:border-sapphire-400 hover:text-sapphire-600 hover:shadow-md
+           active:scale-[0.98];
+    letter-spacing: 0.02em;
+  }
+
+  /* Section layout */
+  .section-container {
+    @apply mx-auto max-w-7xl px-5 sm:px-8 lg:px-12;
+  }
+
+  .section-padding {
+    @apply py-24 md:py-32 lg:py-40;
+  }
+
+  /* Precision line divider */
+  .precision-line {
+    @apply relative h-px w-16 bg-gradient-to-r from-sapphire/60 to-transparent;
+  }
+
+  /* Measurement mark — like calibration marks on instruments */
+  .calibration-mark {
+    @apply relative;
+  }
+
+  .calibration-mark::after {
+    content: '';
+    @apply absolute -bottom-2 left-0 h-0.5 w-8 bg-sapphire/40;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
