@@ -42,11 +42,11 @@ export const productCategories = [
     icon: 'Circle',
     desc: '涵盖被动自锁、金属、陶瓷等多系列托槽，MIM一体成型工艺，纳米级表面处理',
     products: [
-      { name: '卓越Ⅵ代自锁托槽', desc: '最新自锁系列，轻薄化设计，摩擦力降低30%，治疗周期缩短4-6个月', highlight: '新一代' },
-      { name: '卓越Ⅲ代被动自锁托槽', desc: 'MIM一体成型，多种转矩可选，弧形底板精准贴合', highlight: '经典款' },
-      { name: 'HXZ系列自锁托槽', desc: '与华西口腔医院合作研发，临床验证卓越', highlight: '产学研' },
-      { name: '陶瓷托槽', desc: '美学需求首选，半透明材质兼顾美观与性能', highlight: '' },
-      { name: '金属托槽', desc: '基础系列，性价比之选，工艺成熟稳定', highlight: '' },
+      { name: '卓越Ⅵ代自锁托槽', desc: '最新自锁系列，轻薄化设计，摩擦力降低30%，治疗周期缩短4-6个月', highlight: '新一代', image: 'https://images.unsplash.com/photo-1606811971618-4486d14f3f99?w=400&h=300&fit=crop' },
+      { name: '卓越Ⅲ代被动自锁托槽', desc: 'MIM一体成型，多种转矩可选，弧形底板精准贴合', highlight: '经典款', image: 'https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?w=400&h=300&fit=crop' },
+      { name: 'HXZ系列自锁托槽', desc: '与华西口腔医院合作研发，临床验证卓越', highlight: '产学研', image: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400&h=300&fit=crop' },
+      { name: '陶瓷托槽', desc: '美学需求首选，半透明材质兼顾美观与性能', highlight: '', image: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=400&h=300&fit=crop' },
+      { name: '金属托槽', desc: '基础系列，性价比之选，工艺成熟稳定', highlight: '', image: 'https://images.unsplash.com/photo-1551601651-2a8555f1a29e?w=400&h=300&fit=crop' },
     ],
   },
   {
@@ -56,10 +56,10 @@ export const productCategories = [
     icon: 'Droplets',
     desc: '光固化/自固化牙釉质粘合树脂，智能变色技术，临床操作精准可控',
     products: [
-      { name: '蓝胶（Blue Adhesive）', desc: '智能显隐变色（蓝色→透明→蓝色），用于粘接带环及咬合打开', highlight: '明星产品' },
-      { name: '绿胶（Green Adhesive）', desc: '光固化型粘接剂，金属/陶瓷托槽通用，工作时间充裕，脱落率低', highlight: '临床首选' },
-      { name: '光固化牙釉质粘合树脂', desc: '通用型，含粘接剂+引发剂+酸蚀剂完整套装', highlight: '' },
-      { name: '隐形正畸附件粘结剂', desc: '可手塑成型，专为隐形矫治附件设计', highlight: '' },
+      { name: '蓝胶（Blue Adhesive）', desc: '智能显隐变色（蓝色→透明→蓝色），用于粘接带环及咬合打开', highlight: '明星产品' , image: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400&h=300&fit=crop' },
+      { name: '绿胶（Green Adhesive）', desc: '光固化型粘接剂，金属/陶瓷托槽通用，工作时间充裕，脱落率低', highlight: '临床首选' , image: 'https://images.unsplash.com/photo-1576086213369-97a306d36557?w=400&h=300&fit=crop' },
+      { name: '光固化牙釉质粘合树脂', desc: '通用型，含粘接剂+引发剂+酸蚀剂完整套装', highlight: '' , image: 'https://images.unsplash.com/photo-1585435557343-3b092031a831?w=400&h=300&fit=crop' },
+      { name: '隐形正畸附件粘结剂', desc: '可手塑成型，专为隐形矫治附件设计', highlight: '' , image: 'https://images.unsplash.com/photo-1563213126-a4273aed2b5b?w=400&h=300&fit=crop' },
     ],
   },
   {
@@ -69,9 +69,9 @@ export const productCategories = [
     icon: 'Target',
     desc: '钛合金微种植支抗钉，高效自攻设计，多规格可选',
     products: [
-      { name: 'XH方头型支抗钉', desc: '钛合金材质，弧形钉颈保护软组织，加大颈圈便于清洁', highlight: '' },
-      { name: '根内种植钉', desc: '特殊场景专用，高固位力设计', highlight: '' },
-      { name: '骨螺纹根管钉', desc: '自攻自断设计，操作便捷，骨内固位稳定', highlight: '' },
+      { name: 'XH方头型支抗钉', desc: '钛合金材质，弧形钉颈保护软组织，加大颈圈便于清洁', highlight: '' , image: 'https://images.unsplash.com/photo-1583911860205-72f8ac8dee0e?w=400&h=300&fit=crop' },
+      { name: '根内种植钉', desc: '特殊场景专用，高固位力设计', highlight: '' , image: 'https://images.unsplash.com/photo-1551190822-a9333d879b1f?w=400&h=300&fit=crop' },
+      { name: '骨螺纹根管钉', desc: '自攻自断设计，操作便捷，骨内固位稳定', highlight: '' , image: 'https://images.unsplash.com/photo-1530497610245-94d3c16cda28?w=400&h=300&fit=crop' },
     ],
   },
   {
@@ -81,11 +81,11 @@ export const productCategories = [
     icon: 'Wrench',
     desc: '精密正畸工具系列，涵盖测力、定位、弯制、拆装全流程',
     products: [
-      { name: '扭力扳手', desc: '高精度扭力控制，确保自锁托槽开闭精确操作', highlight: '' },
-      { name: '正畸钳系列', desc: '涵盖末端切断钳、细丝弯制钳、托槽去除钳等多款', highlight: '' },
-      { name: '方丝弓成型器', desc: '精准弓形，不锈钢材质，标准弓形模板', highlight: '' },
-      { name: '托槽定位器', desc: '辅助托槽精准定位，提升临床效率', highlight: '' },
-      { name: '牙用测力计', desc: '高灵敏度测力，精确到克，辅助正畸力学设计', highlight: '' },
+      { name: '扭力扳手', desc: '高精度扭力控制，确保自锁托槽开闭精确操作', highlight: '' , image: 'https://images.unsplash.com/photo-1582750433449-648ed127bb54?w=400&h=300&fit=crop' },
+      { name: '正畸钳系列', desc: '涵盖末端切断钳、细丝弯制钳、托槽去除钳等多款', highlight: '' , image: 'https://images.unsplash.com/photo-1563770660941-10a636076e26?w=400&h=300&fit=crop' },
+      { name: '方丝弓成型器', desc: '精准弓形，不锈钢材质，标准弓形模板', highlight: '' , image: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=400&h=300&fit=crop' },
+      { name: '托槽定位器', desc: '辅助托槽精准定位，提升临床效率', highlight: '' , image: 'https://images.unsplash.com/photo-1581093588401-fbb62a02f120?w=400&h=300&fit=crop' },
+      { name: '牙用测力计', desc: '高灵敏度测力，精确到克，辅助正畸力学设计', highlight: '' , image: 'https://images.unsplash.com/photo-1530046339160-ce3e530c7d2f?w=400&h=300&fit=crop' },
     ],
   },
   {
@@ -95,10 +95,10 @@ export const productCategories = [
     icon: 'Package',
     desc: '带环、颊面管、结扎丝圈、橡皮链等正畸全流程配套材料',
     products: [
-      { name: '正畸带环/颊面管', desc: '预成型设计，多规格可选，适配不同牙位', highlight: '' },
-      { name: '正畸钢丝', desc: '多规格镍钛丝、不锈钢丝，满足不同矫治阶段需求', highlight: '' },
-      { name: '纤维桩/根管桩', desc: '高强度纤维增强复合材料，根管修复优选', highlight: '' },
-      { name: '口外弓/扩弓器', desc: '口外支抗装置，螺旋扩弓设计', highlight: '' },
+      { name: '正畸带环/颊面管', desc: '预成型设计，多规格可选，适配不同牙位', highlight: '' , image: 'https://images.unsplash.com/photo-1551601651-2a8555f1a29e?w=400&h=300&fit=crop' },
+      { name: '正畸钢丝', desc: '多规格镍钛丝、不锈钢丝，满足不同矫治阶段需求', highlight: '' , image: 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=400&h=300&fit=crop' },
+      { name: '纤维桩/根管桩', desc: '高强度纤维增强复合材料，根管修复优选', highlight: '' , image: 'https://images.unsplash.com/photo-1563213126-a4273aed2b5b?w=400&h=300&fit=crop' },
+      { name: '口外弓/扩弓器', desc: '口外支抗装置，螺旋扩弓设计', highlight: '' , image: 'https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?w=400&h=300&fit=crop' },
     ],
   },
 ];
