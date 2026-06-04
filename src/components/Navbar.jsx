@@ -1,22 +1,47 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Menu, X, Phone, Globe } from 'lucide-react';
 import { navLinks, siteConfig } from '../data/siteContent';
 import { scrollToSection } from '../utils';
 import useScrollspy from '../hooks/useScrollspy';
 
 const SECTION_IDS = navLinks.map((l) => l.href.replace('#', ''));
+const NAV_HIDE_THRESHOLD = 80;
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
+  const [navHidden, setNavHidden] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const activeId = useScrollspy(SECTION_IDS, 80);
+  const lastScrollY = useRef(0);
+  const scrollTicking = useRef(false);
+
+  // Smart navbar: hide on scroll down, show on scroll up
+  const handleScroll = useCallback(() => {
+    const currentY = window.scrollY;
+    setScrolled(currentY > 40);
+
+    if (currentY < NAV_HIDE_THRESHOLD) {
+      setNavHidden(false);
+    } else if (currentY > lastScrollY.current + 5) {
+      setNavHidden(true);
+    } else if (currentY < lastScrollY.current - 5) {
+      setNavHidden(false);
+    }
+    lastScrollY.current = currentY;
+    scrollTicking.current = false;
+  }, []);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40);
+    const onScroll = () => {
+      if (!scrollTicking.current) {
+        scrollTicking.current = true;
+        requestAnimationFrame(handleScroll);
+      }
+    };
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
-  }, []);
+  }, [handleScroll]);
 
   useEffect(() => {
     document.body.style.overflow = drawerOpen ? 'hidden' : '';
@@ -36,6 +61,8 @@ export default function Navbar() {
           scrolled
             ? 'bg-white/95 backdrop-blur-xl border-b border-stone-200 shadow-sm'
             : 'bg-transparent'
+        } ${
+          navHidden ? '-translate-y-full' : 'translate-y-0'
         }`}
       >
         <div className="section-container">

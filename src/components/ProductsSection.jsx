@@ -65,12 +65,15 @@ export default function ProductsSection() {
           </div>
         </ScrollReveal>
 
-        {/* Active category detail */}
+        {/* Active category detail — crossfade between categories */}
+        <div className="relative mt-14 min-h-[400px]">
         {productCategories.map((cat) => (
           <div
             key={cat.id}
-            className={`mt-14 transition-all duration-500 ${
-              activeCategory === cat.id ? 'block' : 'hidden'
+            className={`transition-all duration-500 ease-out ${
+              activeCategory === cat.id
+                ? 'relative opacity-100 translate-y-0'
+                : 'absolute inset-0 opacity-0 translate-y-4 pointer-events-none'
             }`}
           >
             <ScrollReveal delay={150}>
@@ -98,6 +101,7 @@ export default function ProductsSection() {
             </div>
           </div>
         ))}
+        </div>
       </div>
     </section>
   );

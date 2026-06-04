@@ -126,7 +126,7 @@ export default function ContactSection() {
               className="rounded-2xl border border-stone-200 bg-white p-7 shadow-sm md:p-8"
             >
               {submitted ? (
-                <div className="flex items-center justify-center gap-3 rounded-xl bg-sapphire-50 border border-sapphire-200 p-8 text-center">
+                <div className="flex items-center justify-center gap-3 rounded-xl bg-sapphire-50 border border-sapphire-200 p-8 text-center animate-scale-in">
                   <CheckCircle size={22} className="text-sapphire-500 flex-shrink-0" />
                   <span className="text-sm font-medium text-sapphire-700">提交成功！我们的商务团队将尽快与您联系。</span>
                 </div>

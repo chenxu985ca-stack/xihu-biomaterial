@@ -1,6 +1,7 @@
 import { Phone, MapPin, Mail } from 'lucide-react';
 import { siteConfig, footerContent } from '../data/siteContent';
 import { scrollToSection } from '../utils';
+import ScrollReveal from './ScrollReveal';
 
 export default function Footer() {
   const handleNavClick = (e, href) => {
@@ -14,6 +15,7 @@ export default function Footer() {
       <div className="mx-auto h-px max-w-7xl bg-gradient-to-r from-transparent via-sapphire-400/40 to-transparent px-5" />
 
       <div className="section-container py-16 lg:py-20">
+        <ScrollReveal>
         <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-5">
           {/* Brand */}
           <div className="lg:col-span-2">
@@ -89,6 +91,7 @@ export default function Footer() {
             Precision Manufacturing Since 1994
           </p>
         </div>
+        </ScrollReveal>
       </div>
     </footer>
   );

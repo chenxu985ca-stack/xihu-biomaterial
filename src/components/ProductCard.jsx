@@ -1,12 +1,23 @@
 import { ChevronDown, ImageIcon } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 /**
  * Product card — precision instrument catalog style with image.
- * Features: product image with hover zoom, highlight badge, expandable detail.
+ * Features: product image with loading shimmer, hover zoom, highlight badge, expandable detail.
  */
 export default function ProductCard({ product, isExpanded, onToggle, index }) {
   const [imgError, setImgError] = useState(false);
+  const [imgLoaded, setImgLoaded] = useState(false);
+  const imgRef = useRef(null);
+
+  // Check if image is already cached/loaded
+  useEffect(() => {
+    if (imgRef.current && imgRef.current.complete) {
+      setImgLoaded(true);
+    }
+  }, []);
+
+  const showImage = product.image && !imgError;
 
   return (
     <div
@@ -18,14 +29,23 @@ export default function ProductCard({ product, isExpanded, onToggle, index }) {
     >
       {/* === IMAGE AREA === */}
       <div className="relative h-48 overflow-hidden bg-stone-100 sm:h-52">
-        {product.image && !imgError ? (
+        {/* Shimmer skeleton — shown while image loads */}
+        {showImage && !imgLoaded && (
+          <div className="absolute inset-0 animate-shimmer" />
+        )}
+
+        {showImage ? (
           <>
             <img
+              ref={imgRef}
               src={product.image}
               alt={product.name}
               loading="lazy"
-              onError={() => setImgError(true)}
-              className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+              onLoad={() => setImgLoaded(true)}
+              onError={() => { setImgError(true); setImgLoaded(true); }}
+              className={`h-full w-full object-cover transition-all duration-700 group-hover:scale-105 ${
+                imgLoaded ? 'opacity-100' : 'opacity-0'
+              }`}
             />
             {/* Gradient overlay at bottom for text contrast */}
             <div className="absolute inset-0 bg-gradient-to-t from-stone-900/15 via-transparent to-transparent" />
