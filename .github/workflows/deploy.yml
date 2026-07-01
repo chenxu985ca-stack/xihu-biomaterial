@@ -29,4 +29,6 @@ jobs:
           TENCENT_SECRET_KEY: ${{ secrets.TENCENT_SECRET_KEY }}
         run: |
           pip install cos-python-sdk-v5
+          echo "SECRET_ID set: $([ -n \"$TENCENT_SECRET_ID\" ] && echo YES || echo NO)"
+          echo "SECRET_KEY set: $([ -n \"$TENCENT_SECRET_KEY\" ] && echo YES || echo NO)"
           bash deploy.sh
