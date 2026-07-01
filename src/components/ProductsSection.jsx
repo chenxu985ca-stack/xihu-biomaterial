@@ -1,107 +1,256 @@
-import { useState } from 'react';
-import { Package, FlaskConical, Target, Wrench, Box } from 'lucide-react';
-import { productCategories } from '../data/siteContent';
+import { useState, useEffect } from 'react';
+import { Package, FlaskConical, Target, Wrench, Box, Circle, Loader2, AlertCircle, X } from 'lucide-react';
+import { getCategories, getProductsByCategory } from '../lib/db';
 import SectionHeading from './SectionHeading';
 import ScrollReveal from './ScrollReveal';
 import ProductCard from './ProductCard';
 
 const categoryIcons = {
-  Circle: Package,
+  Circle,
   Droplets: FlaskConical,
-  Target: Target,
-  Wrench: Wrench,
+  Target,
+  Wrench,
   Package: Box,
 };
 
-export default function ProductsSection() {
-  const [activeCategory, setActiveCategory] = useState(productCategories[0].id);
-  const [expanded, setExpanded] = useState({});
+/** 产品详情弹窗 — 与新闻弹窗同款 */
+function ProductModal({ product, onClose }) {
+  if (!product) return null;
 
-  const toggleExpand = (catId, productName) => {
-    const key = `${catId}-${productName}`;
-    setExpanded((prev) => ({ ...prev, [key]: !prev[key] }));
-  };
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="relative w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl bg-white shadow-2xl animate-scale-in"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          className="absolute right-4 top-4 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 backdrop-blur-sm shadow-sm ring-1 ring-black/5 transition-colors hover:bg-stone-100"
+        >
+          <X size={16} className="text-graphite-500" />
+        </button>
+
+        {/* Image */}
+        {product.image && (
+          <div className="aspect-[4/3] overflow-hidden bg-white rounded-t-2xl border-b border-stone-100">
+            <img
+              src={product.image}
+              alt={product.name}
+              className="h-full w-full object-contain p-6"
+            />
+          </div>
+        )}
+
+        <div className="p-8">
+          {/* Highlight badge */}
+          {product.highlight && (
+            <span className="inline-flex items-center rounded-full border border-sapphire-200 bg-sapphire-50 px-2.5 py-0.5 text-[11px] font-semibold text-sapphire-600 mb-4">
+              {product.highlight}
+            </span>
+          )}
+
+          {/* Product name */}
+          <h2 className="font-heading text-xl font-bold text-graphite-900 leading-snug tracking-precision">
+            {product.name}
+          </h2>
+
+          {/* Description */}
+          {product.desc && (
+            <p className="mt-4 text-sm leading-relaxed text-graphite-600">
+              {product.desc}
+            </p>
+          )}
+
+          {/* Footer */}
+          <p className="mt-8 text-xs text-graphite-400">
+            如需了解更多产品信息或获取报价，请联系我们的销售团队
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function ProductsSection() {
+  const [categories, setCategories] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [activeCatId, setActiveCatId] = useState(null);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    getCategories().then(({ data, error: err }) => {
+      if (err) { setError(err); setLoading(false); return; }
+      setCategories(data || []);
+      if (data?.length > 0) setActiveCatId(data[0].id);
+      setLoading(false);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!activeCatId) return;
+    getProductsByCategory(activeCatId).then(({ data, error: err }) => {
+      if (err) { setError(err); return; }
+      setProducts(data || []);
+    });
+  }, [activeCatId]);
+
+  const activeCat = categories.find((c) => c.id === activeCatId);
 
   return (
     <section id="products" className="section-padding bg-stone-50 relative overflow-hidden">
+      {/* Top transition */}
+      <div className="pointer-events-none absolute top-0 h-24 w-full bg-gradient-to-b from-white/60 to-transparent" />
+
       {/* Subtle background texture */}
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.03]"
         style={{
-          backgroundImage: 'linear-gradient(rgba(0,82,204,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(0,82,204,0.5) 1px, transparent 1px)',
+          backgroundImage:
+            'linear-gradient(rgba(0,82,204,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(0,82,204,0.5) 1px, transparent 1px)',
           backgroundSize: '40px 40px',
         }}
       />
+
+      {/* Bottom transition */}
+      <div className="pointer-events-none absolute bottom-0 h-24 w-full bg-gradient-to-t from-white via-white/40 to-transparent" />
 
       <div className="section-container relative z-10">
         <ScrollReveal>
           <SectionHeading
             heading="产品中心"
-            subtitle="五大产品线，覆盖正畸全流程 — 从诊断到治疗，从基础到高端"
+            subtitle="全品类产品线，从基础到高端，覆盖正畸全流程"
           />
         </ScrollReveal>
 
-        {/* Category tabs */}
-        <ScrollReveal delay={100}>
-          <div className="mt-14 flex flex-wrap gap-2 justify-center">
-            {productCategories.map((cat) => {
-              const Icon = categoryIcons[cat.icon] || Package;
-              return (
-                <button
-                  key={cat.id}
-                  onClick={() => setActiveCategory(cat.id)}
-                  className={`inline-flex items-center gap-2.5 rounded-full border px-5 py-2.5 text-sm font-medium tracking-precision transition-all duration-300 ${
-                    activeCategory === cat.id
-                      ? 'border-sapphire-400 bg-sapphire-50 text-sapphire-600 shadow-sm'
-                      : 'border-stone-200 bg-white text-graphite-500 hover:border-stone-300 hover:text-graphite-700'
-                  }`}
-                >
-                  <Icon size={15} />
-                  {cat.name}
-                  <span className="text-[10px] text-graphite-400 font-mono">{cat.nameEN.split(' ')[0]}</span>
-                </button>
-              );
-            })}
+        {/* Loading state */}
+        {loading && (
+          <div className="mt-20 flex justify-center">
+            <Loader2 size={24} className="animate-spin text-graphite-300" />
           </div>
-        </ScrollReveal>
+        )}
 
-        {/* Active category detail — crossfade between categories */}
-        <div className="relative mt-14 min-h-[400px]">
-        {productCategories.map((cat) => (
-          <div
-            key={cat.id}
-            className={`transition-all duration-500 ease-out ${
-              activeCategory === cat.id
-                ? 'relative opacity-100 translate-y-0'
-                : 'absolute inset-0 opacity-0 translate-y-4 pointer-events-none'
-            }`}
-          >
-            <ScrollReveal delay={150}>
-              <div className="mb-10 flex items-center gap-3">
-                <div className="h-px flex-1 bg-gradient-to-r from-transparent via-stone-300 to-transparent" />
-                <p className="text-sm text-graphite-500">{cat.desc}</p>
-                <div className="h-px flex-1 bg-gradient-to-r from-transparent via-stone-300 to-transparent" />
-              </div>
+        {/* Error state */}
+        {error && !loading && (
+          <div className="mt-20 flex flex-col items-center gap-2 text-graphite-400">
+            <AlertCircle size={28} />
+            <p className="text-sm">产品数据加载失败，请稍后再试</p>
+          </div>
+        )}
+
+        {/* Empty state */}
+        {!loading && !error && categories.length === 0 && (
+          <div className="mt-20 py-16 text-center text-graphite-400">
+            <Package size={40} className="mx-auto text-stone-300" />
+            <p className="mt-4 text-sm">产品信息正在整理中，敬请期待</p>
+          </div>
+        )}
+
+        {/* Main content: sidebar + product area */}
+        {!loading && !error && categories.length > 0 && (
+          <div className="mt-14 lg:flex lg:gap-10">
+            {/* === DESKTOP SIDEBAR === */}
+            <ScrollReveal delay={100}>
+              <nav className="hidden lg:block w-56 flex-shrink-0">
+                <div className="sticky top-24">
+                  <p className="mb-3 px-1 text-[10px] font-semibold uppercase tracking-technical text-graphite-400">
+                    产品分类
+                  </p>
+                  <div className="space-y-0.5">
+                    {categories.map((cat) => {
+                      const Icon = categoryIcons[cat.icon] || Package;
+                      const isActive = activeCatId === cat.id;
+                      return (
+                        <button
+                          key={cat.id}
+                          onClick={() => setActiveCatId(cat.id)}
+                          className={`w-full flex items-center gap-3 rounded-lg px-3.5 py-2.5 text-left text-sm font-medium transition-all duration-200 relative ${
+                            isActive
+                              ? 'bg-white border border-stone-200/80 text-sapphire-600 shadow-sm shadow-stone-200/50'
+                              : 'text-graphite-500 hover:text-graphite-700 hover:bg-white/50 border border-transparent'
+                          }`}
+                        >
+                          {isActive && (
+                            <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-r-full bg-sapphire-500" />
+                          )}
+                          <Icon size={15} className={isActive ? 'text-sapphire-500' : 'text-stone-400'} />
+                          <span className="flex-1 truncate tracking-precision">{cat.name}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </nav>
             </ScrollReveal>
 
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {cat.products.map((product, i) => {
-                const key = `${cat.id}-${product.name}`;
-                return (
-                  <ScrollReveal key={product.name} delay={200 + i * 80}>
-                    <ProductCard
-                      product={product}
-                      isExpanded={!!expanded[key]}
-                      onToggle={() => toggleExpand(cat.id, product.name)}
-                      index={i}
-                    />
-                  </ScrollReveal>
-                );
-              })}
+            {/* === MOBILE CATEGORY BAR === */}
+            <div className="lg:hidden mb-8 -mx-4 px-4 overflow-x-auto [&::-webkit-scrollbar]:hidden">
+              <div className="flex gap-2 min-w-max">
+                {categories.map((cat) => {
+                  const isActive = activeCatId === cat.id;
+                  return (
+                    <button
+                      key={cat.id}
+                      onClick={() => setActiveCatId(cat.id)}
+                      className={`flex-shrink-0 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium tracking-precision transition-all duration-300 ${
+                        isActive
+                          ? 'border-sapphire-400 bg-sapphire-50 text-sapphire-600 shadow-sm'
+                          : 'border-stone-200 bg-white text-graphite-500 hover:border-stone-300 hover:text-graphite-700'
+                      }`}
+                    >
+                      {cat.name}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* === PRODUCT AREA === */}
+            <div className="flex-1 min-w-0">
+              {activeCat && (
+                <div className="mb-8 flex items-center gap-3">
+                  <div className="h-px flex-1 bg-gradient-to-r from-transparent via-stone-300 to-transparent" />
+                  <p className="text-sm text-graphite-500 whitespace-nowrap">{activeCat.description}</p>
+                  <div className="h-px flex-1 bg-gradient-to-r from-transparent via-stone-300 to-transparent" />
+                </div>
+              )}
+
+              {products.length === 0 && (
+                <div className="py-16 text-center text-graphite-400">
+                  <Package size={36} className="mx-auto text-stone-300" />
+                  <p className="mt-3 text-sm">该分类暂无产品</p>
+                </div>
+              )}
+
+              {products.length > 0 && (
+                <div className="grid gap-5 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
+                  {products.map((product, i) => (
+                    <ScrollReveal key={product.id} delay={100 + i * 60}>
+                      <ProductCard
+                        product={{
+                          name: product.name,
+                          desc: product.description || '',
+                          highlight: product.highlight || '',
+                          image: product.image_url || '',
+                        }}
+                        onSelect={setSelectedProduct}
+                        index={i}
+                      />
+                    </ScrollReveal>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
-        ))}
-        </div>
+        )}
+
+        {/* Product detail modal */}
+        <ProductModal product={selectedProduct} onClose={() => setSelectedProduct(null)} />
       </div>
     </section>
   );

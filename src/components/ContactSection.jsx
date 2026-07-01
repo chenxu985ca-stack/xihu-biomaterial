@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { Phone, MapPin, Mail, Globe, User, Building2, MessageSquare, Send, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
-import { contactContent, siteConfig } from '../data/siteContent';
-import { submitContactForm } from '../lib/supabase';
+import { Phone, MapPin, Mail, Globe, User, Building2, MessageSquare, Package, Send, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { useSiteSettings } from '../data/SiteSettingsContext';
+import { submitContactForm } from '../lib/db';
 import SectionHeading from './SectionHeading';
 import ScrollReveal from './ScrollReveal';
 
@@ -11,10 +11,9 @@ const formFields = [
   { key: 'name', type: 'text', icon: User },
   { key: 'company', type: 'text', icon: Building2 },
   { key: 'phone', type: 'tel', icon: Phone },
-  { key: 'message', type: 'textarea', icon: MessageSquare, rows: 3 },
 ];
 
-const initialForm = { name: '', company: '', phone: '', message: '' };
+const initialForm = { name: '', company: '', phone: '', interest: '', message: '' };
 const initialErrors = {};
 
 function validate(form) {
@@ -26,6 +25,7 @@ function validate(form) {
 }
 
 export default function ContactSection() {
+  const { contactContent } = useSiteSettings();
   const [form, setForm] = useState(initialForm);
   const [errors, setErrors] = useState(initialErrors);
   const [submitted, setSubmitted] = useState(false);
@@ -82,6 +82,11 @@ export default function ContactSection() {
 
   return (
     <section id="contact" className="section-padding bg-white relative overflow-hidden">
+      {/* Top transition — from previous section */}
+      <div className="pointer-events-none absolute top-0 h-24 w-full bg-gradient-to-b from-stone-50/60 to-transparent" />
+
+      {/* Bottom transition — to footer */}
+      <div className="pointer-events-none absolute bottom-0 h-24 w-full bg-gradient-to-t from-stone-100 via-stone-50/40 to-transparent" />
       <div className="section-container relative z-10">
         <ScrollReveal>
           <SectionHeading heading={contactContent.heading} subtitle={contactContent.subtitle} />
@@ -93,7 +98,7 @@ export default function ContactSection() {
             {contactContent.contactItems.map((item, i) => {
               const Icon = iconMap[item.icon] || Phone;
               const Content = (
-                <div className="flex items-start gap-4 rounded-xl border border-stone-200 bg-white p-4 shadow-sm transition-all duration-300 hover:shadow-md">
+                <div className="flex items-start gap-4 rounded-xl border border-stone-200/80 bg-white p-4 shadow-sm transition-all duration-300 hover:shadow-lg hover:shadow-stone-200/60">
                   <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-sapphire-50">
                     <Icon size={18} className="text-sapphire-500" />
                   </div>
@@ -119,11 +124,11 @@ export default function ContactSection() {
           </div>
 
           {/* Contact form */}
-          <ScrollReveal delay={300} className="lg:col-span-3">
+          <div className="lg:col-span-3">
             <form
               onSubmit={handleSubmit}
               noValidate
-              className="rounded-2xl border border-stone-200 bg-white p-7 shadow-sm md:p-8"
+              className="rounded-2xl border border-stone-200/80 bg-white p-7 shadow-sm md:p-8"
             >
               {submitted ? (
                 <div className="flex items-center justify-center gap-3 rounded-xl bg-sapphire-50 border border-sapphire-200 p-8 text-center animate-scale-in">
@@ -133,39 +138,25 @@ export default function ContactSection() {
               ) : (
                 <>
                   <div className="space-y-5">
-                    {formFields.map(({ key, type, icon: FIcon, rows }) => {
+                    {formFields.map(({ key, type, icon: FIcon }) => {
                       const fieldConfig = contactContent.formFields[key];
-                      const isTextarea = type === 'textarea';
-                      const required = key !== 'company';
+                      const required = key !== 'company' && key !== 'interest';
                       return (
                         <div key={key}>
                           <label htmlFor={key} className="mb-2 flex items-center gap-2 text-sm font-medium text-graphite-600">
                             <FIcon size={14} className="text-graphite-400" />
                             {fieldConfig.label} {required && <span className="text-sapphire-500">*</span>}
                           </label>
-                          {isTextarea ? (
-                            <textarea
-                              id={key}
-                              name={key}
-                              rows={rows}
-                              value={form[key]}
-                              onChange={handleChange}
-                              onBlur={handleBlur}
-                              placeholder={fieldConfig.placeholder}
-                              className={inputClass(key)}
-                            />
-                          ) : (
-                            <input
-                              type={type}
-                              id={key}
-                              name={key}
-                              value={form[key]}
-                              onChange={handleChange}
-                              onBlur={handleBlur}
-                              placeholder={fieldConfig.placeholder}
-                              className={inputClass(key)}
-                            />
-                          )}
+                          <input
+                            type={type}
+                            id={key}
+                            name={key}
+                            value={form[key]}
+                            onChange={handleChange}
+                            onBlur={handleBlur}
+                            placeholder={fieldConfig.placeholder}
+                            className={inputClass(key)}
+                          />
                           {fieldError(key) && (
                             <p className="mt-1.5 flex items-center gap-1 text-xs text-red-500">
                               <AlertCircle size={11} /> {fieldError(key)}
@@ -174,6 +165,49 @@ export default function ContactSection() {
                         </div>
                       );
                     })}
+
+                    {/* Product interest dropdown */}
+                    <div>
+                      <label htmlFor="interest" className="mb-2 flex items-center gap-2 text-sm font-medium text-graphite-600">
+                        <Package size={14} className="text-graphite-400" />
+                        {contactContent.formFields.interest.label}
+                      </label>
+                      <select
+                        id="interest"
+                        name="interest"
+                        value={form.interest}
+                        onChange={handleChange}
+                        className={inputClass('interest')}
+                      >
+                        <option value="" className="text-graphite-400">{contactContent.formFields.interest.placeholder}</option>
+                        {contactContent.productInterests.map((opt) => (
+                          <option key={opt} value={opt}>{opt}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Message textarea */}
+                    <div>
+                      <label htmlFor="message" className="mb-2 flex items-center gap-2 text-sm font-medium text-graphite-600">
+                        <MessageSquare size={14} className="text-graphite-400" />
+                        {contactContent.formFields.message.label} <span className="text-sapphire-500">*</span>
+                      </label>
+                      <textarea
+                        id="message"
+                        name="message"
+                        rows={3}
+                        value={form.message}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        placeholder={contactContent.formFields.message.placeholder}
+                        className={inputClass('message')}
+                      />
+                      {fieldError('message') && (
+                        <p className="mt-1.5 flex items-center gap-1 text-xs text-red-500">
+                          <AlertCircle size={11} /> {fieldError('message')}
+                        </p>
+                      )}
+                    </div>
                   </div>
 
                   {submitError && (
@@ -201,7 +235,7 @@ export default function ContactSection() {
                 </>
               )}
             </form>
-          </ScrollReveal>
+          </div>
         </div>
       </div>
     </section>

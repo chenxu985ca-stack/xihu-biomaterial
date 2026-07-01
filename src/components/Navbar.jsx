@@ -1,13 +1,14 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Menu, X, Phone, Globe } from 'lucide-react';
-import { navLinks, siteConfig } from '../data/siteContent';
-import { scrollToSection } from '../utils';
+import { useSiteSettings } from '../data/SiteSettingsContext';
+import { scrollToSection, BASE } from '../utils';
 import useScrollspy from '../hooks/useScrollspy';
 
-const SECTION_IDS = navLinks.map((l) => l.href.replace('#', ''));
+const SECTION_IDS = ['home', 'products', 'about', 'news', 'contact'];
 const NAV_HIDE_THRESHOLD = 80;
 
 export default function Navbar() {
+  const { navLinks, siteConfig } = useSiteSettings();
   const [scrolled, setScrolled] = useState(false);
   const [navHidden, setNavHidden] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -73,18 +74,15 @@ export default function Navbar() {
               onClick={(e) => { e.preventDefault(); handleNavClick('#home'); }}
               className="group flex items-center gap-3"
             >
-              <div className="relative flex h-9 w-9 items-center justify-center rounded-lg border border-stone-300 bg-white transition-colors group-hover:border-sapphire-400">
-                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                  <rect x="2" y="2" width="14" height="14" rx="3" stroke="#0052CC" strokeWidth="2" fill="none" />
-                  <path d="M7 7 L11 11 M11 7 L7 11" stroke="#A67C52" strokeWidth="1.5" strokeLinecap="round" />
-                </svg>
+              <div className="relative flex h-9 w-9 items-center justify-center rounded-lg border border-stone-300 bg-white transition-colors group-hover:border-sapphire-400 overflow-hidden">
+                <img src={`${BASE}logo.png`} alt="西湖巴尔" className="h-full w-full object-contain p-0.5" />
               </div>
-              <div>
-                <span className="font-heading text-lg font-bold tracking-precision text-graphite-900">
+              <div className="flex flex-col">
+                <span className="font-heading text-lg font-bold tracking-precision text-graphite-900 leading-none">
                   西湖巴尔
                 </span>
-                <span className="ml-2 text-[10px] font-medium uppercase tracking-technical text-graphite-400">
-                  Westlake巴尔
+                <span className="text-[10px] font-medium uppercase tracking-[0.08em] text-graphite-400 mt-0.5">
+                  Westlake Biom
                 </span>
               </div>
             </a>
@@ -159,7 +157,7 @@ export default function Navbar() {
 
       {/* Mobile drawer — panel */}
       <div
-        className={`fixed inset-y-0 right-0 z-50 flex w-72 flex-col bg-white border-l border-stone-200 shadow-2xl transition-transform duration-400 ease-out lg:hidden ${
+        className={`fixed inset-y-0 right-0 z-50 flex w-72 flex-col bg-white border-l border-stone-200 shadow-2xl transition-transform duration-300 ease-out lg:hidden ${
           drawerOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
         role="dialog"

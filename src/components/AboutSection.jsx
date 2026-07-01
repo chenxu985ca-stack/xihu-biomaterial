@@ -1,5 +1,6 @@
 import { Microscope, Award, Globe } from 'lucide-react';
-import { aboutContent, siteConfig } from '../data/siteContent';
+import { useSiteSettings } from '../data/SiteSettingsContext';
+import { BASE } from '../utils';
 import SectionHeading from './SectionHeading';
 import ScrollReveal from './ScrollReveal';
 
@@ -10,8 +11,15 @@ const timelineIcons = {
 };
 
 export default function AboutSection() {
+  const { aboutContent, siteConfig } = useSiteSettings();
   return (
     <section id="about" className="section-padding bg-white relative overflow-hidden">
+      {/* Top transition — from previous section */}
+      <div className="pointer-events-none absolute top-0 h-24 w-full bg-gradient-to-b from-stone-50/60 to-transparent" />
+
+      {/* Bottom transition — to next section (stone-50) */}
+      <div className="pointer-events-none absolute bottom-0 h-24 w-full bg-gradient-to-t from-stone-50 via-stone-50/40 to-transparent" />
+
       {/* Background decoration */}
       <div className="pointer-events-none absolute -right-40 top-1/2 -translate-y-1/2 opacity-[0.03] hidden lg:block" aria-hidden="true">
         <svg width="500" height="600" viewBox="0 0 500 600">
@@ -30,17 +38,12 @@ export default function AboutSection() {
         <ScrollReveal delay={80}>
           <div className="mx-auto mt-12 max-w-2xl text-center">
             <div className="inline-flex items-center gap-3 rounded-2xl border border-sapphire-100 bg-sapphire-50/60 px-6 py-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-sapphire-200 bg-white">
-                <svg width="20" height="20" viewBox="0 0 18 18" fill="none">
-                  <rect x="2" y="2" width="14" height="14" rx="3" stroke="#0052CC" strokeWidth="2" fill="none" />
-                  <path d="M7 7 L11 11 M11 7 L7 11" stroke="#A67C52" strokeWidth="1.5" strokeLinecap="round" />
-                </svg>
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-sapphire-200 bg-white overflow-hidden">
+                <img src={`${BASE}logo.png`} alt="西湖巴尔" className="h-full w-full object-contain p-0.5" />
               </div>
-              <div className="text-left">
-                <p className="text-[11px] font-medium uppercase tracking-technical text-graphite-400">品牌标识</p>
-                <p className="font-heading text-xl font-bold text-graphite-900">
-                  西湖巴尔 <span className="text-sm font-normal text-graphite-500">Westlake巴尔</span>
-                </p>
+              <div>
+                <p className="font-heading text-xl font-bold text-graphite-900">西湖巴尔</p>
+                <p className="text-xs text-graphite-400">Westlake Biom</p>
               </div>
             </div>
           </div>
@@ -78,7 +81,7 @@ export default function AboutSection() {
 
                       {/* Content card */}
                       <div className={`flex-1 md:w-[calc(50%-2rem)] ${i % 2 === 0 ? 'md:pr-10 md:text-right' : 'md:pl-10'}`}>
-                        <div className="rounded-xl border border-stone-200 bg-white p-5 shadow-sm transition-all duration-300 hover:shadow-md">
+                        <div className="rounded-xl border border-stone-200/80 bg-white p-5 shadow-sm transition-all duration-300 hover:shadow-lg hover:shadow-stone-200/60">
                           <div className={`flex items-center gap-3 ${i % 2 === 0 ? 'md:flex-row-reverse' : ''}`}>
                             <span className="font-mono text-xl font-bold text-sapphire-600">{item.year}</span>
                             <h3 className="font-heading text-base font-semibold text-graphite-900">{item.title}</h3>
@@ -111,7 +114,7 @@ export default function AboutSection() {
         <div className="mx-auto mt-16 grid max-w-3xl gap-4 sm:grid-cols-2">
           {siteConfig.achievements.map((item, i) => (
             <ScrollReveal key={item} delay={550 + i * 80}>
-              <div className="flex items-center gap-3 rounded-lg border border-stone-200 bg-stone-50/80 px-5 py-4 transition-colors hover:bg-white hover:shadow-sm">
+              <div className="flex items-center gap-3 rounded-lg border border-stone-200/80 bg-stone-50/80 px-5 py-4 shadow-sm transition-all duration-300 hover:bg-white hover:shadow-md">
                 <Award size={16} className="flex-shrink-0 text-sapphire-500/70" />
                 <span className="text-sm text-graphite-600">{item}</span>
               </div>

@@ -1,9 +1,10 @@
 import { Phone, MapPin, Mail } from 'lucide-react';
-import { siteConfig, footerContent } from '../data/siteContent';
-import { scrollToSection } from '../utils';
+import { useSiteSettings } from '../data/SiteSettingsContext';
+import { scrollToSection, BASE } from '../utils';
 import ScrollReveal from './ScrollReveal';
 
 export default function Footer() {
+  const { siteConfig, footerContent } = useSiteSettings();
   const handleNavClick = (e, href) => {
     e.preventDefault();
     scrollToSection(href);
@@ -20,11 +21,8 @@ export default function Footer() {
           {/* Brand */}
           <div className="lg:col-span-2">
             <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-graphite-700 bg-graphite-800/50">
-                <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
-                  <rect x="2" y="2" width="14" height="14" rx="3" stroke="#0052CC" strokeWidth="2" fill="none" />
-                  <path d="M7 7 L11 11 M11 7 L7 11" stroke="#A67C52" strokeWidth="1.5" strokeLinecap="round" />
-                </svg>
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-graphite-700 bg-white overflow-hidden">
+                <img src={`${BASE}logo.png`} alt="西湖巴尔" className="h-full w-full object-contain p-0.5" />
               </div>
               <span className="font-heading text-lg font-bold text-white">西湖巴尔</span>
             </div>
@@ -72,12 +70,20 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* QR placeholder */}
+          {/* QR Code */}
           <div>
             <h4 className="mb-5 text-[11px] font-semibold uppercase tracking-technical text-graphite-500">官方公众号</h4>
-            <div className="flex h-24 w-24 items-center justify-center rounded-xl border border-graphite-700 bg-graphite-800/50">
-              <span className="text-xl opacity-40">QR</span>
-            </div>
+            {siteConfig.footerQrImage ? (
+              <img
+                src={siteConfig.footerQrImage}
+                alt="微信公众号二维码"
+                className="h-24 w-24 rounded-xl border border-graphite-700 object-contain bg-white"
+              />
+            ) : (
+              <div className="flex h-24 w-24 items-center justify-center rounded-xl border border-graphite-700 bg-graphite-800/50">
+                <span className="text-xl opacity-40">QR</span>
+              </div>
+            )}
             <p className="mt-3 text-xs text-graphite-600">扫码关注西湖巴尔</p>
           </div>
         </div>
@@ -88,7 +94,7 @@ export default function Footer() {
             {footerContent.copyright} &nbsp;|&nbsp; {footerContent.icp}
           </p>
           <p className="font-mono text-[10px] uppercase tracking-technical text-graphite-700">
-            Precision Manufacturing Since 1994
+            Precision Manufacturing Since 1991
           </p>
         </div>
         </ScrollReveal>
