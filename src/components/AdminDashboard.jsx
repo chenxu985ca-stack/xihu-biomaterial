@@ -930,7 +930,7 @@ export default function AdminDashboard({ role = 'editor', onLogout }) {
 
           <div className="flex items-center gap-3">
             <a
-              href={import.meta.env.BASE_URL}
+              href={`${import.meta.env.BASE_URL}index.html`}
               target="_blank"
               className="text-xs text-graphite-400 hover:text-sapphire-600 transition-colors"
             >
