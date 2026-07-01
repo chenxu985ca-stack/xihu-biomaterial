@@ -9,7 +9,7 @@ set -euo pipefail
 
 # 检查环境变量
 if [ -z "${TENCENT_SECRET_ID:-}" ] || [ -z "${TENCENT_SECRET_KEY:-}" ]; then
-  echo "❌ 请设置环境变量: TENCENT_SECRET_ID 和 TENCENT_SECRET_KEY"
+  echo "[ERROR] Please set env vars: TENCENT_SECRET_ID and TENCENT_SECRET_KEY"
   exit 1
 fi
 
@@ -17,10 +17,10 @@ BUCKET="cunxiaziyou-tools-1439283284"
 REGION="ap-hongkong"
 PREFIX="biomaterial"
 
-echo "🔨 Building..."
+echo "[1/3] Building..."
 npm run build
 
-echo "🚀 Deploying to COS..."
+echo "[2/3] Deploying to COS..."
 python3 << EOF
 import os, sys, glob, mimetypes
 from qcloud_cos import CosConfig, CosS3Client
@@ -91,10 +91,10 @@ with open(f'{DIST}/index.html', 'rb') as body:
         CacheControl='no-cache',
     )
 
-print(f'✅ Uploaded {total} files + admin path, deleted {len(to_delete)} stale assets')
+print(f'[OK] Uploaded {total} files + admin path, deleted {len(to_delete)} stale assets')
 EOF
 
 echo ""
-echo "✅ Deploy complete"
+echo "[3/3] Deploy complete"
 echo "   Site:  http://cunxiaziyou.cn/biomaterial/index.html"
 echo "   Admin: http://cunxiaziyou.cn/biomaterial/admin"
