@@ -13,8 +13,9 @@ const REGION = 'ap-hongkong';
 const PREFIX = 'biomaterial';
 const DIST = 'dist';
 
-const secretId = process.env.TENCENT_SECRET_ID;
-const secretKey = process.env.TENCENT_SECRET_KEY;
+// Sanitize keys: trim whitespace, strip non-ASCII chars (copy-paste artifacts)
+const secretId = (process.env.TENCENT_SECRET_ID || '').trim().replace(/[^\x20-\x7E]/g, '');
+const secretKey = (process.env.TENCENT_SECRET_KEY || '').trim().replace(/[^\x20-\x7E]/g, '');
 if (!secretId || !secretKey) {
   console.error('[ERROR] TENCENT_SECRET_ID and TENCENT_SECRET_KEY must be set');
   process.exit(1);
