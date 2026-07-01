@@ -377,6 +377,45 @@ export function onAuthStateChange(callback) {
 
 export { submitContactForm } from './supabase';
 
+/**
+ * 获取所有联系表单提交（管理后台用，按时间倒序）
+ */
+export async function getContactSubmissions() {
+  if (!guard()) return { data: [], error: SUPABASE_UNAVAILABLE.error };
+  const { data, error } = await supabase
+    .from('contact_submissions')
+    .select('*')
+    .order('created_at', { ascending: false });
+  return { data, error };
+}
+
+/**
+ * 标记/取消标记提交为已读
+ * @param {number} id
+ * @param {boolean} read
+ */
+export async function markSubmissionRead(id, read = true) {
+  if (!guard()) return { error: SUPABASE_UNAVAILABLE.error };
+  const { error } = await supabase
+    .from('contact_submissions')
+    .update({ read })
+    .eq('id', id);
+  return { error };
+}
+
+/**
+ * 删除提交
+ * @param {number} id
+ */
+export async function deleteSubmission(id) {
+  if (!guard()) return { error: SUPABASE_UNAVAILABLE.error };
+  const { error } = await supabase
+    .from('contact_submissions')
+    .delete()
+    .eq('id', id);
+  return { error };
+}
+
 // ============================================================
 // 图片标准化处理
 // ============================================================

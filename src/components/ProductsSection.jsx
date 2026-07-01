@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Package, FlaskConical, Target, Wrench, Box, Circle, Loader2, AlertCircle, X } from 'lucide-react';
+import { Package, FlaskConical, Target, Wrench, Box, Circle, Loader2, AlertCircle, X, ImageIcon } from 'lucide-react';
 import { getCategories, getProductsByCategory } from '../lib/db';
 import SectionHeading from './SectionHeading';
 import ScrollReveal from './ScrollReveal';
@@ -13,9 +13,17 @@ const categoryIcons = {
   Package: Box,
 };
 
-/** 产品详情弹窗 — 与新闻弹窗同款 */
+/** 产品详情弹窗 — 精密工业设计风格 */
 function ProductModal({ product, onClose }) {
   if (!product) return null;
+
+  // Parse description into sections (split on newlines that might denote specs)
+  const paragraphs = product.desc
+    ? product.desc.split(/\n\n+/).filter(Boolean)
+    : [];
+  const mainDesc = paragraphs[0] || '';
+  const specs = paragraphs.length > 1 ? paragraphs.slice(1) : [];
+  const hasDetails = mainDesc || specs.length > 0;
 
   return (
     <div
@@ -23,52 +31,113 @@ function ProductModal({ product, onClose }) {
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl bg-white shadow-2xl animate-scale-in"
+        className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-3xl bg-white shadow-2xl animate-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute right-4 top-4 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 backdrop-blur-sm shadow-sm ring-1 ring-black/5 transition-colors hover:bg-stone-100"
+          className="absolute right-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 backdrop-blur-sm shadow-sm ring-1 ring-black/5 transition-all hover:bg-stone-100 hover:scale-110"
         >
           <X size={16} className="text-graphite-500" />
         </button>
 
-        {/* Image */}
-        {product.image && (
-          <div className="aspect-[4/3] overflow-hidden bg-white rounded-t-2xl border-b border-stone-100">
-            <img
-              src={product.image}
-              alt={product.name}
-              className="h-full w-full object-contain p-6"
-            />
-          </div>
-        )}
+        {/* === Image section === */}
+        <div className="relative bg-gradient-to-br from-stone-50 via-white to-sapphire-50/30 rounded-t-3xl border-b border-stone-100">
+          {product.image ? (
+            <div className="aspect-[16/9] overflow-hidden flex items-center justify-center p-8">
+              <img
+                src={product.image}
+                alt={product.name}
+                className="max-h-full max-w-full object-contain drop-shadow-lg"
+              />
+            </div>
+          ) : (
+            <div className="aspect-[16/9] flex flex-col items-center justify-center gap-3">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-stone-100">
+                <ImageIcon size={28} className="text-stone-300" />
+              </div>
+              <span className="text-xs text-stone-400 tracking-technical uppercase">Product Image</span>
+            </div>
+          )}
 
-        <div className="p-8">
-          {/* Highlight badge */}
+          {/* Highlight badge on image */}
           {product.highlight && (
-            <span className="inline-flex items-center rounded-full border border-sapphire-200 bg-sapphire-50 px-2.5 py-0.5 text-[11px] font-semibold text-sapphire-600 mb-4">
+            <span className="absolute left-6 bottom-4 inline-flex items-center rounded-full border border-white/50 bg-white/80 backdrop-blur-sm px-3 py-1 text-[11px] font-semibold text-sapphire-600 shadow-sm">
               {product.highlight}
             </span>
           )}
+        </div>
 
+        {/* === Info section === */}
+        <div className="p-8 sm:p-10">
           {/* Product name */}
-          <h2 className="font-heading text-xl font-bold text-graphite-900 leading-snug tracking-precision">
+          <h2 className="font-heading text-2xl font-bold text-graphite-900 leading-tight tracking-precision">
             {product.name}
           </h2>
 
-          {/* Description */}
-          {product.desc && (
-            <p className="mt-4 text-sm leading-relaxed text-graphite-600">
-              {product.desc}
-            </p>
+          {/* Main description */}
+          {hasDetails ? (
+            <div className="mt-6 space-y-6">
+              {mainDesc && (
+                <p className="text-sm leading-relaxed text-graphite-600">
+                  {mainDesc}
+                </p>
+              )}
+
+              {/* Specs / additional info */}
+              {specs.map((para, i) => (
+                <div key={i} className="space-y-2">
+                  {para.includes('：') || para.includes(':') ? (
+                    /* Render as key-value pairs if it looks like specs */
+                    <div className="rounded-xl border border-stone-100 bg-stone-50/50 overflow-hidden">
+                      {para.split('\n').filter(Boolean).map((line, j) => {
+                        const parts = line.split(/[：:]/);
+                        const key = parts[0]?.trim();
+                        const value = parts.slice(1).join(':').trim();
+                        if (!value) {
+                          return (
+                            <p key={j} className="px-5 py-2 text-sm text-graphite-600 border-b border-stone-100 last:border-0">
+                              {line}
+                            </p>
+                          );
+                        }
+                        return (
+                          <div key={j} className="flex border-b border-stone-100 last:border-0">
+                            <span className="w-28 flex-shrink-0 px-5 py-3 text-xs font-medium text-graphite-400 bg-stone-100/50 tracking-technical">
+                              {key}
+                            </span>
+                            <span className="flex-1 px-5 py-3 text-sm text-graphite-700">
+                              {value}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <p className="text-sm leading-relaxed text-graphite-600">{para}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="mt-4 text-sm text-graphite-400">产品详情正在整理中，敬请期待</p>
           )}
 
-          {/* Footer */}
-          <p className="mt-8 text-xs text-graphite-400">
-            如需了解更多产品信息或获取报价，请联系我们的销售团队
-          </p>
+          {/* Contact CTA */}
+          <div className="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 rounded-2xl border border-sapphire-100 bg-gradient-to-r from-sapphire-50 to-white p-5">
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-graphite-800">对该产品感兴趣？</p>
+              <p className="mt-0.5 text-xs text-graphite-500">联系销售团队获取报价与样品</p>
+            </div>
+            <a
+              href="#contact"
+              onClick={() => { onClose(); }}
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-sapphire-600 px-5 py-2.5 text-xs font-semibold text-white hover:bg-sapphire-700 transition-colors shadow-sm whitespace-nowrap"
+            >
+              立即咨询
+            </a>
+          </div>
         </div>
       </div>
     </div>

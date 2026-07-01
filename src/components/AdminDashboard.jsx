@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   Plus, Edit3, Trash2, Eye, EyeOff, Save, X, LogOut, ImageIcon,
   AlertCircle, CheckCircle, Loader2, Package, Newspaper, ChevronRight,
-  Shield, Settings
+  Shield, Settings, Mail, MailOpen, Phone, Building2, Clock
 } from 'lucide-react';
 import SettingsManager from './SettingsManager';
 import {
@@ -10,6 +10,7 @@ import {
   getAllProductsByCategory, createProduct, updateProduct, deleteProduct,
   getAllNews, createNews, updateNews, deleteNews,
   adminLogout, getAdminSession, uploadImage,
+  getContactSubmissions, markSubmissionRead, deleteSubmission,
 } from '../lib/db';
 
 // ============================================================
@@ -867,6 +868,213 @@ function NewsManager() {
 }
 
 // ============================================================
+// 询盘管理页面
+// ============================================================
+
+function ContactSubmissionsManager() {
+  const [submissions, setSubmissions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showDelete, setShowDelete] = useState(null);
+  const [expanded, setExpanded] = useState(null);
+  const [toast, setToast] = useState(null);
+
+  const loadSubmissions = useCallback(async () => {
+    setLoading(true);
+    const { data } = await getContactSubmissions();
+    setSubmissions(data || []);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { loadSubmissions(); }, [loadSubmissions]);
+
+  const toggleRead = async (s) => {
+    await markSubmissionRead(s.id, !s.read);
+    loadSubmissions();
+  };
+
+  const handleDelete = async () => {
+    if (!showDelete) return;
+    await deleteSubmission(showDelete.id);
+    setShowDelete(null);
+    setExpanded(null);
+    loadSubmissions();
+    setToast({ message: '询盘已删除' });
+  };
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '—';
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' }) +
+      ' ' + d.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+  };
+
+  const unreadCount = submissions.filter((s) => !s.read).length;
+
+  return (
+    <div className="space-y-5">
+      {toast && <Toast {...toast} onClose={() => setToast(null)} />}
+      {showDelete && (
+        <ConfirmDelete
+          message={`确定要删除这条询盘吗？此操作不可恢复。`}
+          onConfirm={handleDelete}
+          onCancel={() => setShowDelete(null)}
+        />
+      )}
+
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <p className="text-sm text-graphite-400">
+            共 {submissions.length} 条询盘
+            {unreadCount > 0 && (
+              <span className="ml-2 inline-flex items-center rounded-full bg-sapphire-50 px-2 py-0.5 text-[11px] font-semibold text-sapphire-600">
+                {unreadCount} 条未读
+              </span>
+            )}
+          </p>
+        </div>
+      </div>
+
+      {/* Submissions list */}
+      <div className="overflow-hidden rounded-xl border border-stone-200 bg-white">
+        {loading ? (
+          <div className="flex items-center justify-center py-16">
+            <Loader2 size={20} className="animate-spin text-graphite-300" />
+          </div>
+        ) : submissions.length === 0 ? (
+          <div className="py-16 text-center">
+            <Mail size={32} className="mx-auto text-stone-300" />
+            <p className="mt-3 text-sm text-graphite-400">暂无询盘</p>
+          </div>
+        ) : (
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-stone-100 bg-stone-50/50">
+                <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-technical text-graphite-400 w-8" />
+                <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-technical text-graphite-400">客户信息</th>
+                <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-technical text-graphite-400 hidden md:table-cell">留言</th>
+                <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-technical text-graphite-400 hidden lg:table-cell">时间</th>
+                <th className="px-5 py-3 text-right text-[11px] font-semibold uppercase tracking-technical text-graphite-400">操作</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-stone-50">
+              {submissions.map((s) => (
+                <tr key={s.id} className={`group hover:bg-stone-50/50 transition-colors cursor-pointer ${!s.read ? 'bg-sapphire-50/30' : ''}`}>
+                  <td className="px-5 py-3.5" onClick={() => setExpanded(expanded === s.id ? null : s.id)}>
+                    {s.read ? (
+                      <MailOpen size={15} className="text-stone-300" />
+                    ) : (
+                      <div className="relative">
+                        <Mail size={15} className="text-sapphire-500" />
+                        <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-sapphire-500" />
+                      </div>
+                    )}
+                  </td>
+                  <td className="px-5 py-3.5" onClick={() => setExpanded(expanded === s.id ? null : s.id)}>
+                    <div>
+                      <span className={`text-sm font-medium ${!s.read ? 'text-graphite-900' : 'text-graphite-600'}`}>
+                        {s.name}
+                      </span>
+                      <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5">
+                        {s.company && (
+                          <span className="inline-flex items-center gap-1 text-[11px] text-graphite-400">
+                            <Building2 size={10} /> {s.company}
+                          </span>
+                        )}
+                        {s.phone && (
+                          <span className="inline-flex items-center gap-1 text-[11px] text-graphite-400">
+                            <Phone size={10} /> {s.phone}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-5 py-3.5 hidden md:table-cell" onClick={() => setExpanded(expanded === s.id ? null : s.id)}>
+                    <p className="text-xs text-graphite-500 line-clamp-2 max-w-xs">{s.message}</p>
+                  </td>
+                  <td className="px-5 py-3.5 hidden lg:table-cell" onClick={() => setExpanded(expanded === s.id ? null : s.id)}>
+                    <span className="inline-flex items-center gap-1 text-xs text-graphite-400">
+                      <Clock size={11} />
+                      {formatDate(s.created_at)}
+                    </span>
+                  </td>
+                  <td className="px-5 py-3.5">
+                    <div className="flex items-center justify-end gap-1">
+                      <button
+                        onClick={() => toggleRead(s)}
+                        className="rounded-lg p-2 text-graphite-400 hover:bg-stone-100 hover:text-graphite-600 transition-colors"
+                        title={s.read ? '标记未读' : '标记已读'}
+                      >
+                        {s.read ? <MailOpen size={13} /> : <Eye size={13} />}
+                      </button>
+                      <button
+                        onClick={() => setShowDelete(s)}
+                        className="rounded-lg p-2 text-graphite-400 hover:bg-red-50 hover:text-red-500 transition-colors"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      {/* Expanded message detail */}
+      {expanded && (() => {
+        const s = submissions.find((sub) => sub.id === expanded);
+        if (!s) return null;
+        return (
+          <div className="rounded-xl border border-stone-200 bg-white p-6">
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <h4 className="font-heading text-base font-semibold text-graphite-900">{s.name}</h4>
+                <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1">
+                  {s.company && (
+                    <span className="inline-flex items-center gap-1.5 text-sm text-graphite-500">
+                      <Building2 size={13} /> {s.company}
+                    </span>
+                  )}
+                  {s.phone && (
+                    <span className="inline-flex items-center gap-1.5 text-sm text-graphite-500">
+                      <Phone size={13} /> {s.phone}
+                    </span>
+                  )}
+                  <span className="inline-flex items-center gap-1.5 text-sm text-graphite-400">
+                    <Clock size={13} /> {formatDate(s.created_at)}
+                  </span>
+                </div>
+              </div>
+              <button onClick={() => setExpanded(null)} className="p-1 text-graphite-400 hover:text-graphite-600">
+                <X size={16} />
+              </button>
+            </div>
+            <div className="rounded-xl border border-stone-100 bg-stone-50/50 p-4">
+              <p className="text-sm leading-relaxed text-graphite-700 whitespace-pre-wrap">{s.message}</p>
+            </div>
+            <div className="mt-4 flex items-center gap-3">
+              <button
+                onClick={() => toggleRead(s)}
+                className="btn-outline px-4 py-2 text-xs"
+              >
+                {s.read ? <><Mail size={12} /> 标记未读</> : <><MailOpen size={12} /> 标记已读</>}
+              </button>
+              <button
+                onClick={() => setShowDelete(s)}
+                className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-medium text-red-500 hover:bg-red-50 transition-colors"
+              >
+                <Trash2 size={12} /> 删除
+              </button>
+            </div>
+          </div>
+        );
+      })()}
+    </div>
+  );
+}
+
+// ============================================================
 // 管理后台主面板
 // ============================================================
 
@@ -913,6 +1121,16 @@ export default function AdminDashboard({ role = 'editor', onLogout }) {
               >
                 <Newspaper size={13} /> 新闻管理
               </button>
+              <button
+                onClick={() => setTab('inquiries')}
+                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
+                  tab === 'inquiries'
+                    ? 'bg-graphite-900 text-white'
+                    : 'text-graphite-500 hover:bg-stone-100'
+                }`}
+              >
+                <Mail size={13} /> 询盘管理
+              </button>
               {role === 'admin' && (
                 <button
                   onClick={() => setTab('settings')}
@@ -950,7 +1168,15 @@ export default function AdminDashboard({ role = 'editor', onLogout }) {
 
       {/* Content area */}
       <div className="mx-auto max-w-6xl px-5 py-8 sm:px-8">
-        {tab === 'products' || (tab === 'settings' && role !== 'admin') ? <ProductsManager /> : tab === 'news' ? <NewsManager /> : <SettingsManager />}
+        {tab === 'products' || (tab === 'settings' && role !== 'admin') ? (
+            <ProductsManager />
+          ) : tab === 'news' ? (
+            <NewsManager />
+          ) : tab === 'inquiries' ? (
+            <ContactSubmissionsManager />
+          ) : (
+            <SettingsManager />
+          )}
       </div>
     </div>
   );
