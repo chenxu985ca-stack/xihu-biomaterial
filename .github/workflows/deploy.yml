@@ -27,6 +27,7 @@ jobs:
         env:
           TENCENT_SECRET_ID: ${{ secrets.TENCENT_SECRET_ID }}
           TENCENT_SECRET_KEY: ${{ secrets.TENCENT_SECRET_KEY }}
+          PYTHONUTF8: 1
         run: |
           pip install coscmd
           coscmd config -a "$TENCENT_SECRET_ID" -s "$TENCENT_SECRET_KEY" \
