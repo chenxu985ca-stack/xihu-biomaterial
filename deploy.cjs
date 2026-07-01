@@ -13,11 +13,24 @@ const REGION = 'ap-hongkong';
 const PREFIX = 'biomaterial';
 const DIST = 'dist';
 
-// Sanitize keys: trim whitespace, strip non-ASCII chars (copy-paste artifacts)
-const secretId = (process.env.TENCENT_SECRET_ID || '').trim().replace(/[^\x20-\x7E]/g, '');
-const secretKey = (process.env.TENCENT_SECRET_KEY || '').trim().replace(/[^\x20-\x7E]/g, '');
+// Validate and clean keys
+const rawId = process.env.TENCENT_SECRET_ID || '';
+const rawKey = process.env.TENCENT_SECRET_KEY || '';
+
+// Strip non-printable and non-ASCII chars (common copy-paste artifacts)
+const secretId = rawId.replace(/[^ -~]/g, '').trim();
+const secretKey = rawKey.replace(/[^ -~]/g, '').trim();
+
 if (!secretId || !secretKey) {
   console.error('[ERROR] TENCENT_SECRET_ID and TENCENT_SECRET_KEY must be set');
+  process.exit(1);
+}
+
+// Warn if keys were cleaned (had invalid chars)
+if (secretId !== rawId.trim() || secretKey !== rawKey.trim()) {
+  console.error('[ERROR] API keys contain invalid characters (newlines, spaces, Unicode).');
+  console.error('       Please re-copy keys from https://console.cloud.tencent.com/cam/capi');
+  console.error('       Make sure there is no extra whitespace or newline.');
   process.exit(1);
 }
 
