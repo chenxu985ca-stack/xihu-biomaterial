@@ -2,7 +2,7 @@
 # ============================================================
 # Deploy: build + upload to Tencent COS
 #
-# Prereq: pip install cos-python-sdk-v5
+# Prereq: npm install (cos-nodejs-sdk-v5 is bundled)
 # Usage:  TENCENT_SECRET_ID=xxx TENCENT_SECRET_KEY=xxx ./deploy.sh
 # ============================================================
 set -euo pipefail
@@ -16,7 +16,7 @@ echo "[1/3] Building..."
 npm run build
 
 echo "[2/3] Deploying to COS..."
-python3 deploy.py
+node deploy.cjs
 
 echo "[3/3] Deploy complete"
 echo "   Site:  http://cunxiaziyou.cn/biomaterial/index.html"

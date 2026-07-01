@@ -27,10 +27,4 @@ jobs:
         env:
           TENCENT_SECRET_ID: ${{ secrets.TENCENT_SECRET_ID }}
           TENCENT_SECRET_KEY: ${{ secrets.TENCENT_SECRET_KEY }}
-          PYTHONUTF8: 1
-        run: |
-          pip install coscmd
-          coscmd config -a "$TENCENT_SECRET_ID" -s "$TENCENT_SECRET_KEY" \
-            -b cunxiaziyou-tools-1439283284 -r ap-hongkong
-          coscmd upload -r dist/ biomaterial/ --delete
-          python3 deploy.py
+        run: node deploy.cjs
