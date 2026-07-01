@@ -306,6 +306,30 @@ export async function updateSiteSetting(key, value) {
 }
 
 // ============================================================
+// 用户角色
+// ============================================================
+
+/**
+ * 获取当前用户的角色
+ * 未在 user_roles 表中找到记录时默认返回 'editor'（最小权限原则）
+ * @param {string} userId - Supabase Auth user.id
+ * @returns {{ role: string }}
+ */
+export async function getUserRole(userId) {
+  if (!guard()) return { role: 'editor' };
+  const { data, error } = await supabase
+    .from('user_roles')
+    .select('role')
+    .eq('user_id', userId)
+    .single();
+  if (error || !data) {
+    // 无记录时默认 editor（最小权限）
+    return { role: 'editor' };
+  }
+  return { role: data.role };
+}
+
+// ============================================================
 // 管理员认证
 // ============================================================
 

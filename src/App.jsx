@@ -8,7 +8,7 @@ import ContactSection from './components/ContactSection';
 import Footer from './components/Footer';
 import AdminLogin from './components/AdminLogin';
 import { SiteSettingsProvider } from './data/SiteSettingsContext';
-import { getAdminSession } from './lib/db';
+import { getAdminSession, getUserRole } from './lib/db';
 
 // AdminDashboard is ~60KB — only loaded when user visits /admin
 const AdminDashboard = lazy(() => import('./components/AdminDashboard'));
@@ -37,11 +37,16 @@ function PublicSite() {
  */
 function AdminApp() {
   const [session, setSession] = useState(null);
+  const [role, setRole] = useState('editor');
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    getAdminSession().then(({ session: s }) => {
+    getAdminSession().then(async ({ session: s }) => {
       setSession(s);
+      if (s?.user?.id) {
+        const { role: r } = await getUserRole(s.user.id);
+        setRole(r);
+      }
       setChecking(false);
     });
   }, []);
@@ -55,7 +60,19 @@ function AdminApp() {
   }
 
   if (!session) {
-    return <AdminLogin onLoginSuccess={() => getAdminSession().then(({ session: s }) => setSession(s))} />;
+    return (
+      <AdminLogin
+        onLoginSuccess={() =>
+          getAdminSession().then(async ({ session: s }) => {
+            setSession(s);
+            if (s?.user?.id) {
+              const { role: r } = await getUserRole(s.user.id);
+              setRole(r);
+            }
+          })
+        }
+      />
+    );
   }
 
   return (
@@ -64,7 +81,7 @@ function AdminApp() {
         <div className="h-5 w-5 animate-spin rounded-full border-2 border-graphite-300 border-t-graphite-600" />
       </div>
     }>
-      <AdminDashboard onLogout={() => setSession(null)} />
+      <AdminDashboard role={role} onLogout={() => setSession(null)} />
     </Suspense>
   );
 }

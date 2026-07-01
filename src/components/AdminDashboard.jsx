@@ -870,7 +870,7 @@ function NewsManager() {
 // 管理后台主面板
 // ============================================================
 
-export default function AdminDashboard({ onLogout }) {
+export default function AdminDashboard({ role = 'editor', onLogout }) {
   const [tab, setTab] = useState('products');
   const [loggingOut, setLoggingOut] = useState(false);
 
@@ -913,16 +913,18 @@ export default function AdminDashboard({ onLogout }) {
               >
                 <Newspaper size={13} /> 新闻管理
               </button>
-              <button
-                onClick={() => setTab('settings')}
-                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
-                  tab === 'settings'
-                    ? 'bg-graphite-900 text-white'
-                    : 'text-graphite-500 hover:bg-stone-100'
-                }`}
-              >
-                <Settings size={13} /> 网站设置
-              </button>
+              {role === 'admin' && (
+                <button
+                  onClick={() => setTab('settings')}
+                  className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
+                    tab === 'settings'
+                      ? 'bg-graphite-900 text-white'
+                      : 'text-graphite-500 hover:bg-stone-100'
+                  }`}
+                >
+                  <Settings size={13} /> 网站设置
+                </button>
+              )}
             </nav>
           </div>
 
@@ -948,7 +950,7 @@ export default function AdminDashboard({ onLogout }) {
 
       {/* Content area */}
       <div className="mx-auto max-w-6xl px-5 py-8 sm:px-8">
-        {tab === 'products' ? <ProductsManager /> : tab === 'news' ? <NewsManager /> : <SettingsManager />}
+        {tab === 'products' || (tab === 'settings' && role !== 'admin') ? <ProductsManager /> : tab === 'news' ? <NewsManager /> : <SettingsManager />}
       </div>
     </div>
   );
