@@ -2,7 +2,7 @@
 # ============================================================
 # 部署脚本：构建 + 上传 COS + 修复 admin 路径 Content-Type
 #
-# 依赖: pip install qcloud_cos
+# 依赖: pip install cos-python-sdk-v5
 # 用法: TENCENT_SECRET_ID=xxx TENCENT_SECRET_KEY=xxx ./deploy.sh
 # ============================================================
 set -euo pipefail
