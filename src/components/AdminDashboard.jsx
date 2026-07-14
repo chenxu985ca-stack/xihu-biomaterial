@@ -618,6 +618,8 @@ function ProductsManager() {
                   <option value="明星产品">明星产品</option>
                   <option value="经典款">经典款</option>
                   <option value="临床首选">临床首选</option>
+                  <option value="自研">自研</option>
+                  <option value="产学研">产学研</option>
                 </select>
               </div>
               <div>

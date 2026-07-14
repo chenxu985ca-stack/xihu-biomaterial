@@ -71,7 +71,9 @@ export default function ProductCard({ product, onSelect, index }) {
                 ? 'border-sapphire-200 bg-sapphire-50/90 text-sapphire-600'
                 : product.highlight === '经典款' || product.highlight === '临床首选'
                   ? 'border-warm-bronze/30 bg-warm-bronze/10 text-warm-bronze'
-                  : 'border-stone-200 bg-white/90 text-graphite-500'
+                  : product.highlight === '自研' || product.highlight === '产学研'
+                    ? 'border-emerald-200 bg-emerald-50/90 text-emerald-600'
+                    : 'border-stone-200 bg-white/90 text-graphite-500'
             }`}
           >
             {product.highlight}
