@@ -370,7 +370,7 @@ function ProductsManager() {
   const [showCatManager, setShowCatManager] = useState(false);
 
   const [form, setForm] = useState({
-    name: '', description: '', highlight: '', image_url: '', sort_order: 0
+    name: '', description: '', content: '', highlight: '', image_url: '', sort_order: 0
   });
 
   // 加载分类
@@ -397,14 +397,14 @@ function ProductsManager() {
 
   const openNew = () => {
     setEditing(null);
-    setForm({ name: '', description: '', highlight: '', image_url: '', sort_order: 0 });
+    setForm({ name: '', description: '', content: '', highlight: '', image_url: '', sort_order: 0 });
     setShowModal(true);
   };
 
   const openEdit = (p) => {
     setEditing(p);
     setForm({
-      name: p.name, description: p.description || '', highlight: p.highlight || '',
+      name: p.name, description: p.description || '', content: p.content || '', highlight: p.highlight || '',
       image_url: p.image_url || '', sort_order: p.sort_order || 0
     });
     setShowModal(true);
@@ -590,8 +590,18 @@ function ProductsManager() {
               <textarea
                 value={form.description}
                 onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-                rows={3}
+                rows={2}
                 placeholder="简要描述产品特点..."
+                className="w-full rounded-lg border border-stone-200 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sapphire/30 focus:border-sapphire-400 resize-none"
+              />
+            </div>
+            <div>
+              <label className="mb-1.5 block text-xs font-medium text-graphite-500">产品内容</label>
+              <textarea
+                value={form.content}
+                onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
+                rows={5}
+                placeholder="详细内容，支持 参数名：参数值 格式自动生成参数表..."
                 className="w-full rounded-lg border border-stone-200 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sapphire/30 focus:border-sapphire-400 resize-none"
               />
             </div>

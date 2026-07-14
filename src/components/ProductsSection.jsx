@@ -17,13 +17,9 @@ const categoryIcons = {
 function ProductModal({ product, onClose }) {
   if (!product) return null;
 
-  // Parse description into sections (split on newlines that might denote specs)
-  const paragraphs = product.desc
-    ? product.desc.split(/\n\n+/).filter(Boolean)
-    : [];
-  const mainDesc = paragraphs[0] || '';
-  const specs = paragraphs.length > 1 ? paragraphs.slice(1) : [];
-  const hasDetails = mainDesc || specs.length > 0;
+  const mainDesc = product.desc || '';
+  const content = product.content || '';
+  const hasDetails = mainDesc || content;
 
   return (
     <div
@@ -76,35 +72,40 @@ function ProductModal({ product, onClose }) {
             {product.name}
           </h2>
 
-          {/* Main description */}
+          {/* Description + Content */}
           {hasDetails ? (
             <div className="mt-6 space-y-6">
+              {/* 产品描述 */}
               {mainDesc && (
-                <p className="text-sm leading-relaxed text-graphite-600">
-                  {mainDesc}
-                </p>
+                <div>
+                  <h4 className="mb-2 text-[11px] font-semibold uppercase tracking-technical text-graphite-400">产品描述</h4>
+                  <p className="text-sm leading-relaxed text-graphite-600">
+                    {mainDesc}
+                  </p>
+                </div>
               )}
 
-              {/* Specs / additional info */}
-              {specs.map((para, i) => (
-                <div key={i} className="space-y-2">
-                  {para.includes('：') || para.includes(':') ? (
-                    /* Render as key-value pairs if it looks like specs */
+              {/* 产品内容 */}
+              {content && (
+                <div>
+                  <h4 className="mb-3 text-[11px] font-semibold uppercase tracking-technical text-graphite-400">产品内容</h4>
+                  {content.includes('：') || content.includes(':') ? (
+                    /* Render as key-value parameter table */
                     <div className="rounded-xl border border-stone-100 bg-stone-50/50 overflow-hidden">
-                      {para.split('\n').filter(Boolean).map((line, j) => {
+                      {content.split('\n').filter(Boolean).map((line, j) => {
                         const parts = line.split(/[：:]/);
                         const key = parts[0]?.trim();
                         const value = parts.slice(1).join(':').trim();
                         if (!value) {
                           return (
-                            <p key={j} className="px-5 py-2 text-sm text-graphite-600 border-b border-stone-100 last:border-0">
+                            <p key={j} className="px-5 py-2.5 text-sm text-graphite-600 border-b border-stone-100 last:border-0">
                               {line}
                             </p>
                           );
                         }
                         return (
                           <div key={j} className="flex border-b border-stone-100 last:border-0">
-                            <span className="w-28 flex-shrink-0 px-5 py-3 text-xs font-medium text-graphite-400 bg-stone-100/50 tracking-technical">
+                            <span className="w-32 flex-shrink-0 px-5 py-3 text-xs font-medium text-graphite-400 bg-stone-100/50 tracking-technical">
                               {key}
                             </span>
                             <span className="flex-1 px-5 py-3 text-sm text-graphite-700">
@@ -115,10 +116,10 @@ function ProductModal({ product, onClose }) {
                       })}
                     </div>
                   ) : (
-                    <p className="text-sm leading-relaxed text-graphite-600">{para}</p>
+                    <p className="text-sm leading-relaxed text-graphite-600 whitespace-pre-wrap">{content}</p>
                   )}
                 </div>
-              ))}
+              )}
             </div>
           ) : (
             <p className="mt-4 text-sm text-graphite-400">产品详情正在整理中，敬请期待</p>
@@ -304,6 +305,7 @@ export default function ProductsSection() {
                         product={{
                           name: product.name,
                           desc: product.description || '',
+                          content: product.content || '',
                           highlight: product.highlight || '',
                           image: product.image_url || '',
                         }}

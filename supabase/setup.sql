@@ -29,6 +29,7 @@ CREATE TABLE IF NOT EXISTS products (
   category_id BIGINT NOT NULL REFERENCES product_categories(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   description TEXT,
+  content TEXT,
   highlight TEXT,
   image_url TEXT,
   sort_order INT NOT NULL DEFAULT 0,
