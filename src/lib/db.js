@@ -207,6 +207,7 @@ export async function getNews() {
     .from('news')
     .select('*')
     .eq('is_active', true)
+    .order('sort_order')
     .order('publish_date', { ascending: false });
   return { data, error };
 }
@@ -219,6 +220,7 @@ export async function getAllNews() {
   const { data, error } = await supabase
     .from('news')
     .select('*')
+    .order('sort_order')
     .order('publish_date', { ascending: false });
   return { data, error };
 }
@@ -554,4 +556,28 @@ export async function deleteImage(url, bucket = 'products') {
   if (!fileName) return { error: '无法解析文件路径' };
   const { error } = await supabase.storage.from(bucket).remove([fileName]);
   return { error };
+}
+
+// ============================================================
+// 排序辅助 — 通过交换 sort_order 实现上下移动
+// ============================================================
+
+/**
+ * 交换两个产品的 sort_order
+ */
+export async function swapProductOrder(id1, sort1, id2, sort2) {
+  if (!guard()) return { error: SUPABASE_UNAVAILABLE.error };
+  await supabase.from('products').update({ sort_order: sort2, updated_at: new Date().toISOString() }).eq('id', id1);
+  await supabase.from('products').update({ sort_order: sort1, updated_at: new Date().toISOString() }).eq('id', id2);
+  return { error: null };
+}
+
+/**
+ * 交换两条新闻的 sort_order
+ */
+export async function swapNewsOrder(id1, sort1, id2, sort2) {
+  if (!guard()) return { error: SUPABASE_UNAVAILABLE.error };
+  await supabase.from('news').update({ sort_order: sort2, updated_at: new Date().toISOString() }).eq('id', id1);
+  await supabase.from('news').update({ sort_order: sort1, updated_at: new Date().toISOString() }).eq('id', id2);
+  return { error: null };
 }

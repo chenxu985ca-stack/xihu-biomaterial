@@ -48,6 +48,7 @@ CREATE TABLE IF NOT EXISTS news (
   summary TEXT NOT NULL,
   content TEXT,
   tag TEXT NOT NULL DEFAULT '动态',
+  sort_order INT NOT NULL DEFAULT 0,
   publish_date DATE NOT NULL DEFAULT CURRENT_DATE,
   image_url TEXT,
   is_active BOOLEAN NOT NULL DEFAULT true,

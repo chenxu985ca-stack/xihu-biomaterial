@@ -152,6 +152,7 @@ export default function ProductsSection() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
     getCategories().then(({ data, error: err }) => {
@@ -164,6 +165,7 @@ export default function ProductsSection() {
 
   useEffect(() => {
     if (!activeCatId) return;
+    setShowAll(false);
     getProductsByCategory(activeCatId).then(({ data, error: err }) => {
       if (err) { setError(err); return; }
       setProducts(data || []);
@@ -298,23 +300,35 @@ export default function ProductsSection() {
               )}
 
               {products.length > 0 && (
-                <div className="grid gap-5 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
-                  {products.map((product, i) => (
-                    <ScrollReveal key={product.id} delay={100 + i * 60}>
-                      <ProductCard
-                        product={{
-                          name: product.name,
-                          desc: product.description || '',
-                          content: product.content || '',
-                          highlight: product.highlight || '',
-                          image: product.image_url || '',
-                        }}
-                        onSelect={setSelectedProduct}
-                        index={i}
-                      />
-                    </ScrollReveal>
-                  ))}
-                </div>
+                <>
+                  <div className="grid gap-5 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
+                    {(showAll ? products : products.slice(0, 8)).map((product, i) => (
+                      <ScrollReveal key={product.id} delay={100 + i * 60}>
+                        <ProductCard
+                          product={{
+                            name: product.name,
+                            desc: product.description || '',
+                            content: product.content || '',
+                            highlight: product.highlight || '',
+                            image: product.image_url || '',
+                          }}
+                          onSelect={setSelectedProduct}
+                          index={i}
+                        />
+                      </ScrollReveal>
+                    ))}
+                  </div>
+                  {products.length > 8 && (
+                    <div className="mt-8 text-center">
+                      <button
+                        onClick={() => setShowAll(!showAll)}
+                        className="inline-flex items-center gap-2 rounded-full border border-stone-300 bg-white px-6 py-2.5 text-sm font-medium text-graphite-600 hover:border-sapphire-300 hover:text-sapphire-600 transition-all shadow-sm"
+                      >
+                        {showAll ? '收起' : `展开全部（共 ${products.length} 个产品）`}
+                      </button>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>

@@ -2,7 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   Plus, Edit3, Trash2, Eye, EyeOff, Save, X, LogOut, ImageIcon,
   AlertCircle, CheckCircle, Loader2, Package, Newspaper, ChevronRight,
-  Shield, Settings, Mail, MailOpen, Phone, Building2, Clock
+  Shield, Settings, Mail, MailOpen, Phone, Building2, Clock,
+  ArrowUp, ArrowDown
 } from 'lucide-react';
 import SettingsManager from './SettingsManager';
 import {
@@ -11,6 +12,7 @@ import {
   getAllNews, createNews, updateNews, deleteNews,
   adminLogout, getAdminSession, uploadImage,
   getContactSubmissions, markSubmissionRead, deleteSubmission,
+  swapProductOrder, swapNewsOrder,
 } from '../lib/db';
 
 // ============================================================
@@ -435,6 +437,16 @@ function ProductsManager() {
     loadProducts();
   };
 
+  const moveProduct = async (index, direction) => {
+    const targetIndex = index + direction;
+    if (targetIndex < 0 || targetIndex >= products.length) return;
+    await swapProductOrder(
+      products[index].id, products[index].sort_order,
+      products[targetIndex].id, products[targetIndex].sort_order,
+    );
+    loadProducts();
+  };
+
   return (
     <div className="space-y-5">
       {toast && <Toast {...toast} onClose={() => setToast(null)} />}
@@ -507,11 +519,12 @@ function ProductsManager() {
                 <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-technical text-graphite-400">产品</th>
                 <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-technical text-graphite-400 hidden sm:table-cell">标签</th>
                 <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-technical text-graphite-400 hidden md:table-cell">状态</th>
+                <th className="px-5 py-3 text-center text-[11px] font-semibold uppercase tracking-technical text-graphite-400 w-16">排序</th>
                 <th className="px-5 py-3 text-right text-[11px] font-semibold uppercase tracking-technical text-graphite-400">操作</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-stone-50">
-              {products.map((p) => (
+              {products.map((p, i) => (
                 <tr key={p.id} className={`hover:bg-stone-50/50 transition-colors ${!p.is_active ? 'opacity-50' : ''}`}>
                   <td className="px-5 py-3">
                     <div className="flex items-center gap-3">
@@ -544,6 +557,24 @@ function ProductsManager() {
                       {p.is_active ? <Eye size={11} /> : <EyeOff size={11} />}
                       {p.is_active ? '显示' : '隐藏'}
                     </button>
+                  </td>
+                  <td className="px-5 py-3">
+                    <div className="flex items-center justify-center gap-0.5">
+                      <button
+                        onClick={() => moveProduct(i, -1)}
+                        disabled={i === 0}
+                        className="rounded p-1 text-graphite-400 hover:bg-stone-100 hover:text-graphite-600 disabled:opacity-20 disabled:cursor-default transition-colors"
+                      >
+                        <ArrowUp size={13} />
+                      </button>
+                      <button
+                        onClick={() => moveProduct(i, 1)}
+                        disabled={i === products.length - 1}
+                        className="rounded p-1 text-graphite-400 hover:bg-stone-100 hover:text-graphite-600 disabled:opacity-20 disabled:cursor-default transition-colors"
+                      >
+                        <ArrowDown size={13} />
+                      </button>
+                    </div>
                   </td>
                   <td className="px-5 py-3">
                     <div className="flex items-center justify-end gap-1">
@@ -658,7 +689,7 @@ function NewsManager() {
   const [toast, setToast] = useState(null);
 
   const [form, setForm] = useState({
-    title: '', summary: '', tag: '动态', publish_date: '', image_url: ''
+    title: '', summary: '', tag: '动态', sort_order: 0, publish_date: '', image_url: ''
   });
 
   const loadNews = useCallback(async () => {
@@ -673,7 +704,7 @@ function NewsManager() {
   const openNew = () => {
     setEditing(null);
     setForm({
-      title: '', summary: '', tag: '动态',
+      title: '', summary: '', tag: '动态', sort_order: news.length,
       publish_date: new Date().toISOString().slice(0, 10), image_url: ''
     });
     setShowModal(true);
@@ -683,6 +714,7 @@ function NewsManager() {
     setEditing(n);
     setForm({
       title: n.title, summary: n.summary || '', tag: n.tag || '动态',
+      sort_order: n.sort_order || 0,
       publish_date: n.publish_date || '', image_url: n.image_url || ''
     });
     setShowModal(true);
@@ -710,6 +742,16 @@ function NewsManager() {
 
   const toggleActive = async (n) => {
     await updateNews(n.id, { is_active: !n.is_active });
+    loadNews();
+  };
+
+  const moveNews = async (index, direction) => {
+    const targetIndex = index + direction;
+    if (targetIndex < 0 || targetIndex >= news.length) return;
+    await swapNewsOrder(
+      news[index].id, news[index].sort_order,
+      news[targetIndex].id, news[targetIndex].sort_order,
+    );
     loadNews();
   };
 
@@ -760,11 +802,12 @@ function NewsManager() {
                 <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-technical text-graphite-400 hidden sm:table-cell">标签</th>
                 <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-technical text-graphite-400 hidden md:table-cell">日期</th>
                 <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-technical text-graphite-400 hidden md:table-cell">状态</th>
+                <th className="px-5 py-3 text-center text-[11px] font-semibold uppercase tracking-technical text-graphite-400 w-16">排序</th>
                 <th className="px-5 py-3 text-right text-[11px] font-semibold uppercase tracking-technical text-graphite-400">操作</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-stone-50">
-              {news.map((n) => (
+              {news.map((n, i) => (
                 <tr key={n.id} className={`hover:bg-stone-50/50 transition-colors ${!n.is_active ? 'opacity-50' : ''}`}>
                   <td className="px-5 py-3">
                     <span className="text-sm font-medium text-graphite-900 line-clamp-1">{n.title}</span>
@@ -790,6 +833,24 @@ function NewsManager() {
                       {n.is_active ? <Eye size={11} /> : <EyeOff size={11} />}
                       {n.is_active ? '显示' : '隐藏'}
                     </button>
+                  </td>
+                  <td className="px-5 py-3">
+                    <div className="flex items-center justify-center gap-0.5">
+                      <button
+                        onClick={() => moveNews(i, -1)}
+                        disabled={i === 0}
+                        className="rounded p-1 text-graphite-400 hover:bg-stone-100 hover:text-graphite-600 disabled:opacity-20 disabled:cursor-default transition-colors"
+                      >
+                        <ArrowUp size={13} />
+                      </button>
+                      <button
+                        onClick={() => moveNews(i, 1)}
+                        disabled={i === news.length - 1}
+                        className="rounded p-1 text-graphite-400 hover:bg-stone-100 hover:text-graphite-600 disabled:opacity-20 disabled:cursor-default transition-colors"
+                      >
+                        <ArrowDown size={13} />
+                      </button>
+                    </div>
                   </td>
                   <td className="px-5 py-3">
                     <div className="flex items-center justify-end gap-1">
