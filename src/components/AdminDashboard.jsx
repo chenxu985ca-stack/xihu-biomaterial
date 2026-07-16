@@ -21,6 +21,11 @@ import {
 
 /** 模态框 */
 function Modal({ title, children, onClose }) {
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, []);
+
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto pt-20 pb-10 px-4">
       <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
