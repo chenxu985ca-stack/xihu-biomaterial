@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { Calendar, Tag, ArrowUpRight, Loader2, AlertCircle, Newspaper, ChevronDown, X } from 'lucide-react';
 import { getNews } from '../lib/db';
+import NavForceHideContext from '../data/NavForceHideContext';
 import SectionHeading from './SectionHeading';
 import ScrollReveal from './ScrollReveal';
 
@@ -15,6 +16,13 @@ const INITIAL_DISPLAY = 8;
 
 /** 新闻详情弹窗 */
 function NewsModal({ item, onClose }) {
+  useEffect(() => {
+    if (item) {
+      document.body.style.overflow = 'hidden';
+      return () => { document.body.style.overflow = ''; };
+    }
+  }, [item]);
+
   if (!item) return null;
 
   return (
@@ -97,6 +105,12 @@ export default function NewsSection() {
   const [error, setError] = useState(null);
   const [showAll, setShowAll] = useState(false);
   const [selectedNews, setSelectedNews] = useState(null);
+  const { setForceHide } = useContext(NavForceHideContext);
+
+  // Hide navbar when news detail modal is open
+  useEffect(() => {
+    setForceHide(!!selectedNews);
+  }, [selectedNews, setForceHide]);
 
   useEffect(() => {
     getNews().then(({ data, error: err }) => {
@@ -160,7 +174,10 @@ export default function NewsSection() {
             <div className="mt-16 grid gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
               {(showAll ? news : news.slice(0, INITIAL_DISPLAY)).map((item, i) => (
                 <ScrollReveal key={item.id} delay={i * 80}>
-                  <article className="group relative flex flex-col overflow-hidden rounded-2xl border border-stone-200/80 bg-white shadow-sm transition-all duration-300 hover:shadow-lg hover:shadow-stone-200/60 hover:border-stone-300 hover:-translate-y-0.5">
+                  <article
+                    onClick={() => setSelectedNews(item)}
+                    className="group relative flex flex-col overflow-hidden rounded-2xl border border-stone-200/80 bg-white shadow-sm transition-all duration-300 hover:shadow-lg hover:shadow-stone-200/60 hover:border-stone-300 hover:-translate-y-0.5 cursor-pointer"
+                  >
                     {/* Image */}
                     {item.image_url && (
                       <div className="relative aspect-[4/3] overflow-hidden bg-white">
@@ -207,7 +224,7 @@ export default function NewsSection() {
 
                       {/* Read more button */}
                       <button
-                        onClick={() => setSelectedNews(item)}
+                        onClick={(e) => { e.stopPropagation(); setSelectedNews(item); }}
                         className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-graphite-400 transition-colors hover:text-sapphire-600"
                       >
                         阅读详情

@@ -7,7 +7,7 @@ import useScrollspy from '../hooks/useScrollspy';
 const SECTION_IDS = ['home', 'products', 'about', 'news', 'contact'];
 const NAV_HIDE_THRESHOLD = 80;
 
-export default function Navbar() {
+export default function Navbar({ forceHide = false }) {
   const { navLinks, siteConfig } = useSiteSettings();
   const [scrolled, setScrolled] = useState(false);
   const [navHidden, setNavHidden] = useState(false);
@@ -63,7 +63,7 @@ export default function Navbar() {
             ? 'bg-white/95 backdrop-blur-xl border-b border-stone-200 shadow-sm'
             : 'bg-transparent'
         } ${
-          navHidden ? '-translate-y-full' : 'translate-y-0'
+          (navHidden || forceHide) ? '-translate-y-full' : 'translate-y-0'
         }`}
       >
         <div className="section-container">

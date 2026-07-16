@@ -95,7 +95,7 @@ function ImageUpload({ currentUrl, onUploaded, bucket = 'products' }) {
     setProcessing(false);
     setUploading(false);
     if (error) {
-      alert('图片上传失败，请重试');
+      alert(typeof error === 'string' ? error : '图片上传失败，请重试');
       return;
     }
     setPreview(data.url);
@@ -169,11 +169,13 @@ function CategoriesManager({ categories, onChanged, onClose }) {
 
   const handleSaveCat = async () => {
     if (!catForm.name.trim() || !catForm.slug.trim()) return;
+    let result;
     if (editingCat) {
-      await updateCategory(editingCat.id, catForm);
+      result = await updateCategory(editingCat.id, catForm);
     } else {
-      await createCategory(catForm);
+      result = await createCategory(catForm);
     }
+    if (result.error) return;
     setEditingCat(null);
     setShowForm(false);
     onChanged();
@@ -181,13 +183,15 @@ function CategoriesManager({ categories, onChanged, onClose }) {
 
   const handleDeleteCat = async () => {
     if (!showDeleteCat) return;
-    await deleteCategory(showDeleteCat.id);
+    const { error } = await deleteCategory(showDeleteCat.id);
+    if (error) return;
     setShowDeleteCat(null);
     onChanged();
   };
 
   const toggleCatActive = async (c) => {
-    await updateCategory(c.id, { is_active: !c.is_active });
+    const { error } = await updateCategory(c.id, { is_active: !c.is_active });
+    if (error) return;
     onChanged();
   };
 
@@ -423,10 +427,15 @@ function ProductsManager() {
 
   const handleSave = async () => {
     if (!form.name.trim()) return;
+    let result;
     if (editing) {
-      await updateProduct(editing.id, form);
+      result = await updateProduct(editing.id, form);
     } else {
-      await createProduct({ ...form, category_id: activeCat });
+      result = await createProduct({ ...form, category_id: activeCat });
+    }
+    if (result.error) {
+      setToast({ type: 'error', message: '保存失败，请检查权限或稍后重试' });
+      return;
     }
     setShowModal(false);
     loadProducts();
@@ -435,24 +444,36 @@ function ProductsManager() {
 
   const handleDelete = async () => {
     if (!showDelete) return;
-    await deleteProduct(showDelete.id);
+    const { error } = await deleteProduct(showDelete.id);
+    if (error) {
+      setToast({ type: 'error', message: '删除失败，请检查权限或稍后重试' });
+      return;
+    }
     setShowDelete(null);
     loadProducts();
     setToast({ message: '产品已删除' });
   };
 
   const toggleActive = async (p) => {
-    await updateProduct(p.id, { is_active: !p.is_active });
+    const { error } = await updateProduct(p.id, { is_active: !p.is_active });
+    if (error) {
+      setToast({ type: 'error', message: '状态更新失败，请检查权限' });
+      return;
+    }
     loadProducts();
   };
 
   const moveProduct = async (index, direction) => {
     const targetIndex = index + direction;
     if (targetIndex < 0 || targetIndex >= products.length) return;
-    await swapProductOrder(
+    const { error } = await swapProductOrder(
       products[index].id, products[index].sort_order,
       products[targetIndex].id, products[targetIndex].sort_order,
     );
+    if (error) {
+      setToast({ type: 'error', message: '排序失败，请稍后重试' });
+      return;
+    }
     loadProducts();
   };
 
@@ -731,10 +752,15 @@ function NewsManager() {
 
   const handleSave = async () => {
     if (!form.title.trim() || !form.summary.trim()) return;
+    let result;
     if (editing) {
-      await updateNews(editing.id, form);
+      result = await updateNews(editing.id, form);
     } else {
-      await createNews(form);
+      result = await createNews(form);
+    }
+    if (result.error) {
+      setToast({ type: 'error', message: '保存失败，请检查权限或稍后重试' });
+      return;
     }
     setShowModal(false);
     loadNews();
@@ -743,24 +769,36 @@ function NewsManager() {
 
   const handleDelete = async () => {
     if (!showDelete) return;
-    await deleteNews(showDelete.id);
+    const { error } = await deleteNews(showDelete.id);
+    if (error) {
+      setToast({ type: 'error', message: '删除失败，请检查权限或稍后重试' });
+      return;
+    }
     setShowDelete(null);
     loadNews();
     setToast({ message: '新闻已删除' });
   };
 
   const toggleActive = async (n) => {
-    await updateNews(n.id, { is_active: !n.is_active });
+    const { error } = await updateNews(n.id, { is_active: !n.is_active });
+    if (error) {
+      setToast({ type: 'error', message: '状态更新失败，请检查权限' });
+      return;
+    }
     loadNews();
   };
 
   const moveNews = async (index, direction) => {
     const targetIndex = index + direction;
     if (targetIndex < 0 || targetIndex >= news.length) return;
-    await swapNewsOrder(
+    const { error } = await swapNewsOrder(
       news[index].id, news[index].sort_order,
       news[targetIndex].id, news[targetIndex].sort_order,
     );
+    if (error) {
+      setToast({ type: 'error', message: '排序失败，请稍后重试' });
+      return;
+    }
     loadNews();
   };
 
@@ -953,7 +991,7 @@ function NewsManager() {
 // 询盘管理页面
 // ============================================================
 
-function ContactSubmissionsManager() {
+function ContactSubmissionsManager({ role = 'editor' }) {
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showDelete, setShowDelete] = useState(null);
@@ -970,13 +1008,21 @@ function ContactSubmissionsManager() {
   useEffect(() => { loadSubmissions(); }, [loadSubmissions]);
 
   const toggleRead = async (s) => {
-    await markSubmissionRead(s.id, !s.read);
+    const { error } = await markSubmissionRead(s.id, !s.read);
+    if (error) {
+      setToast({ type: 'error', message: '标记失败，请检查权限' });
+      return;
+    }
     loadSubmissions();
   };
 
   const handleDelete = async () => {
     if (!showDelete) return;
-    await deleteSubmission(showDelete.id);
+    const { error } = await deleteSubmission(showDelete.id);
+    if (error) {
+      setToast({ type: 'error', message: '删除失败，请检查权限' });
+      return;
+    }
     setShowDelete(null);
     setExpanded(null);
     loadSubmissions();
@@ -1067,6 +1113,11 @@ function ContactSubmissionsManager() {
                             <Phone size={10} /> {s.phone}
                           </span>
                         )}
+                        {s.interest && (
+                          <span className="inline-flex items-center gap-1 text-[11px] text-graphite-400">
+                            <Package size={10} /> {s.interest}
+                          </span>
+                        )}
                       </div>
                     </div>
                   </td>
@@ -1088,12 +1139,14 @@ function ContactSubmissionsManager() {
                       >
                         {s.read ? <MailOpen size={13} /> : <Eye size={13} />}
                       </button>
-                      <button
-                        onClick={() => setShowDelete(s)}
-                        className="rounded-lg p-2 text-graphite-400 hover:bg-red-50 hover:text-red-500 transition-colors"
-                      >
-                        <Trash2 size={13} />
-                      </button>
+                      {role === 'admin' && (
+                        <button
+                          onClick={() => setShowDelete(s)}
+                          className="rounded-lg p-2 text-graphite-400 hover:bg-red-50 hover:text-red-500 transition-colors"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -1123,6 +1176,11 @@ function ContactSubmissionsManager() {
                       <Phone size={13} /> {s.phone}
                     </span>
                   )}
+                  {s.interest && (
+                    <span className="inline-flex items-center gap-1.5 text-sm text-graphite-500">
+                      <Package size={13} /> {s.interest}
+                    </span>
+                  )}
                   <span className="inline-flex items-center gap-1.5 text-sm text-graphite-400">
                     <Clock size={13} /> {formatDate(s.created_at)}
                   </span>
@@ -1142,12 +1200,14 @@ function ContactSubmissionsManager() {
               >
                 {s.read ? <><Mail size={12} /> 标记未读</> : <><MailOpen size={12} /> 标记已读</>}
               </button>
-              <button
-                onClick={() => setShowDelete(s)}
-                className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-medium text-red-500 hover:bg-red-50 transition-colors"
-              >
-                <Trash2 size={12} /> 删除
-              </button>
+              {role === 'admin' && (
+                <button
+                  onClick={() => setShowDelete(s)}
+                  className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-medium text-red-500 hover:bg-red-50 transition-colors"
+                >
+                  <Trash2 size={12} /> 删除
+                </button>
+              )}
             </div>
           </div>
         );
@@ -1255,7 +1315,7 @@ export default function AdminDashboard({ role = 'editor', onLogout }) {
           ) : tab === 'news' ? (
             <NewsManager />
           ) : tab === 'inquiries' ? (
-            <ContactSubmissionsManager />
+            <ContactSubmissionsManager role={role} />
           ) : (
             <SettingsManager />
           )}

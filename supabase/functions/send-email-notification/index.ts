@@ -33,7 +33,7 @@ Deno.serve(async (req) => {
   }
 
   const record = body.record || body;
-  const { name, company, phone, message } = record;
+  const { name, company, phone, interest, message } = record;
 
   // 降级模式：未配置 API Key 时仅打印日志
   if (!RESEND_API_KEY) {
@@ -67,6 +67,12 @@ Deno.serve(async (req) => {
             <td style="padding: 10px 12px; color: #6B737D;">电话</td>
             <td style="padding: 10px 12px; color: #1A1D20; font-weight: 600;"><a href="tel:${phone}" style="color: #0052CC;">${phone}</a></td>
           </tr>
+          ${interest ? `
+          <tr>
+            <td style="padding: 10px 12px; color: #6B737D;">兴趣</td>
+            <td style="padding: 10px 12px; color: #1A1D20; font-weight: 600;">${interest}</td>
+          </tr>
+          ` : ''}
           <tr style="background: #F5F5F5;">
             <td style="padding: 10px 12px; color: #6B737D; vertical-align: top;">需求</td>
             <td style="padding: 10px 12px; color: #1A1D20;">${message}</td>

@@ -17,7 +17,7 @@ export const supabase = supabaseUrl && supabaseAnonKey
 
 /**
  * 提交联系表单到 Supabase。
- * @param {{ name: string, company: string, phone: string, message: string }} data
+ * @param {{ name: string, company: string, phone: string, interest?: string, message: string }} data
  * @returns {{ success: boolean, error?: string }}
  */
 export async function submitContactForm(data) {
@@ -33,6 +33,7 @@ export async function submitContactForm(data) {
       name: data.name.trim(),
       company: data.company.trim() || null,
       phone: data.phone.trim(),
+      interest: data.interest?.trim() || null,
       message: data.message.trim(),
     });
 

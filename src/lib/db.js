@@ -16,12 +16,30 @@ import { supabase } from './supabase';
 /** 当 Supabase 未配置时返回此对象，调用方可据此降级 */
 const SUPABASE_UNAVAILABLE = { error: '数据库未连接', data: null };
 
+const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
+const IMAGE_EXTENSIONS = {
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+  'image/webp': 'webp',
+};
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
+
 function guard() {
   if (!supabase) {
     console.warn('[db] Supabase 未配置，操作被忽略。');
     return false;
   }
   return true;
+}
+
+function validateImageFile(file) {
+  if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
+    return '仅支持 JPG、PNG、WebP 图片';
+  }
+  if (file.size > MAX_IMAGE_SIZE) {
+    return '图片不能超过 5MB';
+  }
+  return null;
 }
 
 // ============================================================
@@ -494,6 +512,8 @@ async function normalizeImage(file, width = 600, height = 450) {
  */
 export async function uploadImage(file, bucket = 'products') {
   if (!guard()) return { data: null, error: SUPABASE_UNAVAILABLE.error };
+  const validationError = validateImageFile(file);
+  if (validationError) return { data: null, error: validationError };
 
   // 标准化图片尺寸
   let normalized;
@@ -527,16 +547,18 @@ export async function uploadImage(file, bucket = 'products') {
  */
 export async function uploadHeroImage(file) {
   if (!guard()) return { data: null, error: SUPABASE_UNAVAILABLE.error };
+  const validationError = validateImageFile(file);
+  if (validationError) return { data: null, error: validationError };
 
-  const ext = file.name.split('.').pop() || 'jpg';
+  const ext = IMAGE_EXTENSIONS[file.type] || 'jpg';
   const fileName = `hero-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
 
-  // 复用 products bucket（已有上传策略），不归一化，保持原尺寸
+  // 复用 products bucket（已有上传策略）
   const { error } = await supabase.storage
     .from('products')
     .upload(fileName, file, {
       cacheControl: '31536000',
-      contentType: file.type || 'image/jpeg',
+      contentType: file.type,
     });
 
   if (error) return { data: null, error };
@@ -567,8 +589,11 @@ export async function deleteImage(url, bucket = 'products') {
  */
 export async function swapProductOrder(id1, sort1, id2, sort2) {
   if (!guard()) return { error: SUPABASE_UNAVAILABLE.error };
-  await supabase.from('products').update({ sort_order: sort2, updated_at: new Date().toISOString() }).eq('id', id1);
-  await supabase.from('products').update({ sort_order: sort1, updated_at: new Date().toISOString() }).eq('id', id2);
+  const updatedAt = new Date().toISOString();
+  const first = await supabase.from('products').update({ sort_order: sort2, updated_at: updatedAt }).eq('id', id1);
+  if (first.error) return { error: first.error };
+  const second = await supabase.from('products').update({ sort_order: sort1, updated_at: updatedAt }).eq('id', id2);
+  if (second.error) return { error: second.error };
   return { error: null };
 }
 
@@ -577,7 +602,10 @@ export async function swapProductOrder(id1, sort1, id2, sort2) {
  */
 export async function swapNewsOrder(id1, sort1, id2, sort2) {
   if (!guard()) return { error: SUPABASE_UNAVAILABLE.error };
-  await supabase.from('news').update({ sort_order: sort2, updated_at: new Date().toISOString() }).eq('id', id1);
-  await supabase.from('news').update({ sort_order: sort1, updated_at: new Date().toISOString() }).eq('id', id2);
+  const updatedAt = new Date().toISOString();
+  const first = await supabase.from('news').update({ sort_order: sort2, updated_at: updatedAt }).eq('id', id1);
+  if (first.error) return { error: first.error };
+  const second = await supabase.from('news').update({ sort_order: sort1, updated_at: updatedAt }).eq('id', id2);
+  if (second.error) return { error: second.error };
   return { error: null };
 }

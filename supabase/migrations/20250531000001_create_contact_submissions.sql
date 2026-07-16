@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS contact_submissions (
   name TEXT NOT NULL,
   company TEXT,
   phone TEXT NOT NULL,
+  interest TEXT,
   message TEXT NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   read BOOLEAN NOT NULL DEFAULT false

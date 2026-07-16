@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from 'react';
+import { useState, useEffect, lazy, Suspense, useMemo } from 'react';
 import Navbar from './components/Navbar';
 import HeroSection from './components/HeroSection';
 import ProductsSection from './components/ProductsSection';
@@ -8,6 +8,7 @@ import ContactSection from './components/ContactSection';
 import Footer from './components/Footer';
 import AdminLogin from './components/AdminLogin';
 import { SiteSettingsProvider } from './data/SiteSettingsContext';
+import NavForceHideContext from './data/NavForceHideContext';
 import { getAdminSession, getUserRole } from './lib/db';
 
 // AdminDashboard is ~60KB — only loaded when user visits /admin
@@ -17,17 +18,22 @@ const AdminDashboard = lazy(() => import('./components/AdminDashboard'));
  * 公开网站（首页）
  */
 function PublicSite() {
+  const [forceHideNav, setForceHideNav] = useState(false);
+  const navCtx = useMemo(() => ({ setForceHide: setForceHideNav }), []);
+
   return (
     <SiteSettingsProvider>
-      <Navbar />
-      <main>
-        <HeroSection />
-        <ProductsSection />
-        <AboutSection />
-        <NewsSection />
-        <ContactSection />
-      </main>
-      <Footer />
+      <NavForceHideContext.Provider value={navCtx}>
+        <Navbar forceHide={forceHideNav} />
+        <main>
+          <HeroSection />
+          <ProductsSection />
+          <AboutSection />
+          <NewsSection />
+          <ContactSection />
+        </main>
+        <Footer />
+      </NavForceHideContext.Provider>
     </SiteSettingsProvider>
   );
 }

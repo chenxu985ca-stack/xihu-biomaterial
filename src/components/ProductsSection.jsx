@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { Package, FlaskConical, Target, Wrench, Box, Circle, Loader2, AlertCircle, X, ImageIcon } from 'lucide-react';
 import { getCategories, getProductsByCategory } from '../lib/db';
+import NavForceHideContext from '../data/NavForceHideContext';
 import SectionHeading from './SectionHeading';
 import ScrollReveal from './ScrollReveal';
 import ProductCard from './ProductCard';
@@ -12,6 +13,129 @@ const categoryIcons = {
   Wrench,
   Package: Box,
 };
+
+/**
+ * 产品内容渲染器 — 智能识别并拆分技术参数 & 产品内容：
+ *   以 --- 为界拆分，上半部分为技术参数表，下半部分为产品内容
+ *   如无分隔符，则按格式自动判断类型
+ */
+function ContentRenderer({ content }) {
+  if (!content) return null;
+
+  // —— 辅助：检测是否为管道表格 ——
+  function isPipeTable(text) {
+    const ls = text.split('\n').filter(Boolean);
+    if (ls.length < 2) return false;
+    const counts = ls.map((l) => (l.match(/\|/g) || []).length);
+    return counts.every((c) => c >= 2) && new Set(counts).size === 1;
+  }
+
+  // —— 辅助：渲染管道表格 ——
+  function renderTable(text) {
+    const ls = text.split('\n').filter(Boolean);
+    const rows = ls.map((l) =>
+      l.split('|').map((c) => c.trim()).filter((c) => c !== '')
+    );
+    const hasHeader = rows.length >= 2 && rows[0].length === rows[1]?.length;
+
+    return (
+      <div className="rounded-xl border border-stone-100 overflow-x-auto">
+        <table className="w-full text-sm">
+          {hasHeader && (
+            <thead>
+              <tr className="border-b border-stone-200 bg-stone-100/70">
+                {rows[0].map((col, j) => (
+                  <th key={j} className={`px-4 py-3 text-xs font-semibold text-graphite-500 tracking-technical whitespace-nowrap ${j === 0 ? 'text-left' : 'text-center'}`}>
+                    {col}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+          )}
+          <tbody className="divide-y divide-stone-100">
+            {(hasHeader ? rows.slice(1) : rows).map((row, i) => (
+              <tr key={i} className="hover:bg-stone-50/50 transition-colors">
+                {row.map((col, j) => (
+                  <td key={j} className={`px-4 py-2.5 whitespace-nowrap ${j === 0 ? 'text-xs font-semibold text-graphite-500 bg-stone-100/50' : 'text-sm text-graphite-700 text-center'}`}>
+                    {col}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+
+  // —— 辅助：渲染参数表或纯文本 ——
+  function renderContent(text) {
+    const ls = text.split('\n').filter(Boolean);
+
+    if (text.includes('：') || text.includes(':')) {
+      return (
+        <div className="rounded-xl border border-stone-100 bg-stone-50/50 overflow-hidden">
+          {ls.map((line, j) => {
+            const parts = line.split(/[：:]/);
+            const key = parts[0]?.trim();
+            const value = parts.slice(1).join(':').trim();
+            if (!value) {
+              return <p key={j} className="px-5 py-2.5 text-sm text-graphite-600 border-b border-stone-100 last:border-0">{line}</p>;
+            }
+            return (
+              <div key={j} className="flex border-b border-stone-100 last:border-0">
+                <span className="w-32 flex-shrink-0 px-5 py-3 text-xs font-medium text-graphite-400 bg-stone-100/50 tracking-technical">{key}</span>
+                <span className="flex-1 px-5 py-3 text-sm text-graphite-700">{value}</span>
+              </div>
+            );
+          })}
+        </div>
+      );
+    }
+    return <p className="text-sm leading-relaxed text-graphite-600 whitespace-pre-wrap">{text}</p>;
+  }
+
+  // ==== 主逻辑：按 --- 分隔符拆分 ====
+  const sepIndex = content.indexOf('\n---\n');
+  const specText = sepIndex >= 0 ? content.slice(0, sepIndex).trim() : '';
+  const restText = sepIndex >= 0 ? content.slice(sepIndex + 5).trim() : '';
+
+  if (sepIndex >= 0 && specText) {
+    // 明确分隔符：上半=技术参数，下半=产品内容
+    return (
+      <div className="space-y-6">
+        <div>
+          <h4 className="mb-3 text-[11px] font-semibold uppercase tracking-technical text-graphite-400">技术参数</h4>
+          {isPipeTable(specText) ? renderTable(specText) : renderContent(specText)}
+        </div>
+        {restText && (
+          <div>
+            <h4 className="mb-3 text-[11px] font-semibold uppercase tracking-technical text-graphite-400">产品内容</h4>
+            {renderContent(restText)}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // 没有分隔符：全管道表格 → 整体作为技术参数
+  if (isPipeTable(content)) {
+    return (
+      <div>
+        <h4 className="mb-3 text-[11px] font-semibold uppercase tracking-technical text-graphite-400">技术参数</h4>
+        {renderTable(content)}
+      </div>
+    );
+  }
+
+  // 普通内容
+  return (
+    <div>
+      <h4 className="mb-3 text-[11px] font-semibold uppercase tracking-technical text-graphite-400">产品内容</h4>
+      {renderContent(content)}
+    </div>
+  );
+}
 
 /** 产品详情弹窗 — 精密工业设计风格 */
 function ProductModal({ product, onClose }) {
@@ -94,38 +218,7 @@ function ProductModal({ product, onClose }) {
 
               {/* 产品内容 */}
               {content && (
-                <div>
-                  <h4 className="mb-3 text-[11px] font-semibold uppercase tracking-technical text-graphite-400">产品内容</h4>
-                  {content.includes('：') || content.includes(':') ? (
-                    /* Render as key-value parameter table */
-                    <div className="rounded-xl border border-stone-100 bg-stone-50/50 overflow-hidden">
-                      {content.split('\n').filter(Boolean).map((line, j) => {
-                        const parts = line.split(/[：:]/);
-                        const key = parts[0]?.trim();
-                        const value = parts.slice(1).join(':').trim();
-                        if (!value) {
-                          return (
-                            <p key={j} className="px-5 py-2.5 text-sm text-graphite-600 border-b border-stone-100 last:border-0">
-                              {line}
-                            </p>
-                          );
-                        }
-                        return (
-                          <div key={j} className="flex border-b border-stone-100 last:border-0">
-                            <span className="w-32 flex-shrink-0 px-5 py-3 text-xs font-medium text-graphite-400 bg-stone-100/50 tracking-technical">
-                              {key}
-                            </span>
-                            <span className="flex-1 px-5 py-3 text-sm text-graphite-700">
-                              {value}
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <p className="text-sm leading-relaxed text-graphite-600 whitespace-pre-wrap">{content}</p>
-                  )}
-                </div>
+                <ContentRenderer content={content} />
               )}
             </div>
           ) : (
@@ -158,8 +251,15 @@ export default function ProductsSection() {
   const [activeCatId, setActiveCatId] = useState(null);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [productsLoading, setProductsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showAll, setShowAll] = useState(false);
+  const { setForceHide } = useContext(NavForceHideContext);
+
+  // Hide navbar when product detail modal is open
+  useEffect(() => {
+    setForceHide(!!selectedProduct);
+  }, [selectedProduct, setForceHide]);
 
   useEffect(() => {
     getCategories().then(({ data, error: err }) => {
@@ -172,11 +272,17 @@ export default function ProductsSection() {
 
   useEffect(() => {
     if (!activeCatId) return;
+    let cancelled = false;
     setShowAll(false);
+    setProducts([]);
+    setProductsLoading(true);
     getProductsByCategory(activeCatId).then(({ data, error: err }) => {
-      if (err) { setError(err); return; }
+      if (cancelled) return;
+      if (err) { setError(err); setProductsLoading(false); return; }
       setProducts(data || []);
+      setProductsLoading(false);
     });
+    return () => { cancelled = true; };
   }, [activeCatId]);
 
   const activeCat = categories.find((c) => c.id === activeCatId);
@@ -299,14 +405,20 @@ export default function ProductsSection() {
                 </div>
               )}
 
-              {products.length === 0 && (
+              {productsLoading && (
+                <div className="py-16 text-center text-graphite-400">
+                  <Loader2 size={24} className="mx-auto animate-spin text-graphite-300" />
+                </div>
+              )}
+
+              {!productsLoading && products.length === 0 && (
                 <div className="py-16 text-center text-graphite-400">
                   <Package size={36} className="mx-auto text-stone-300" />
                   <p className="mt-3 text-sm">该分类暂无产品</p>
                 </div>
               )}
 
-              {products.length > 0 && (
+              {!productsLoading && products.length > 0 && (
                 <>
                   <div className="grid gap-5 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
                     {(showAll ? products : products.slice(0, 8)).map((product, i) => (
