@@ -16,9 +16,11 @@ const categoryIcons = {
 /** 产品详情弹窗 — 精密工业设计风格 */
 function ProductModal({ product, onClose }) {
   useEffect(() => {
-    document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = ''; };
-  }, []);
+    if (product) {
+      document.body.style.overflow = 'hidden';
+      return () => { document.body.style.overflow = ''; };
+    }
+  }, [product]);
 
   if (!product) return null;
 
