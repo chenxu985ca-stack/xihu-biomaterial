@@ -141,6 +141,7 @@ const CATEGORY_ICONS = ['Circle', 'Droplets', 'Target', 'Wrench', 'Package'];
 
 function CategoriesManager({ categories, onChanged, onClose }) {
   const [editingCat, setEditingCat] = useState(null);
+  const [showForm, setShowForm] = useState(false);
   const [showDeleteCat, setShowDeleteCat] = useState(null);
   const [catForm, setCatForm] = useState({
     name: '', name_en: '', slug: '', description: '', icon: 'Package', sort_order: 0
@@ -148,11 +149,13 @@ function CategoriesManager({ categories, onChanged, onClose }) {
 
   const openNewCat = () => {
     setEditingCat(null);
+    setShowForm(true);
     setCatForm({ name: '', name_en: '', slug: '', description: '', icon: 'Package', sort_order: categories.length + 1 });
   };
 
   const openEditCat = (c) => {
     setEditingCat(c);
+    setShowForm(true);
     setCatForm({
       name: c.name, name_en: c.name_en || '', slug: c.slug, description: c.description || '',
       icon: c.icon || 'Package', sort_order: c.sort_order || 0
@@ -167,6 +170,7 @@ function CategoriesManager({ categories, onChanged, onClose }) {
       await createCategory(catForm);
     }
     setEditingCat(null);
+    setShowForm(false);
     onChanged();
   };
 
@@ -272,7 +276,7 @@ function CategoriesManager({ categories, onChanged, onClose }) {
       </div>
 
       {/* Add/Edit category form (inline at bottom) */}
-      {(editingCat !== null || catForm.name !== '') && (
+      {(showForm) && (
         <div className="rounded-xl border border-stone-200 bg-white p-5">
           <h4 className="mb-4 text-sm font-semibold text-graphite-900">
             {editingCat ? '编辑分类' : '新增分类'}
@@ -340,7 +344,7 @@ function CategoriesManager({ categories, onChanged, onClose }) {
             </div>
             <div className="flex justify-end gap-3 pt-2">
               <button
-                onClick={() => { setEditingCat(null); setCatForm({ name: '', name_en: '', slug: '', description: '', icon: 'Package', sort_order: 0 }); }}
+                onClick={() => { setEditingCat(null); setShowForm(false); setCatForm({ name: '', name_en: '', slug: '', description: '', icon: 'Package', sort_order: 0 }); }}
                 className="btn-outline px-5 py-2 text-sm"
               >
                 取消
