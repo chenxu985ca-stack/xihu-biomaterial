@@ -408,7 +408,7 @@ function ProductsManager() {
 
   const openNew = () => {
     setEditing(null);
-    setForm({ name: '', description: '', content: '', highlight: '', image_url: '', sort_order: 0 });
+    setForm({ name: '', description: '', content: '', highlight: '', image_url: '', sort_order: products.length + 1 });
     setShowModal(true);
   };
 
