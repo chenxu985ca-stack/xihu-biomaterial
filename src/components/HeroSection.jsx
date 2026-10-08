@@ -26,8 +26,8 @@ export default function HeroSection() {
       <div className="pointer-events-none absolute -bottom-40 right-0 h-[500px] w-[500px] rounded-full bg-gradient-radial-sapphire opacity-[0.04]" />
 
       <div className="section-container relative z-10 w-full flex-1 flex flex-col pt-24 pb-8 md:pt-32 md:pb-10">
-        {/* Two-column grid — image bottom-aligned with CTAs */}
-        <div className="grid gap-8 lg:grid-cols-2 lg:gap-14 items-end">
+        {/* Two-column grid — align the image with the start of the hero copy */}
+        <div className="grid gap-8 lg:grid-cols-2 lg:gap-14 items-start">
           {/* Left: Text */}
           <div className="flex flex-col">
             {/* SINCE badge */}
@@ -82,7 +82,7 @@ export default function HeroSection() {
             </div>
           </div>
 
-          {/* Right: Image — centered vertically, larger (desktop) */}
+          {/* Right: Image — top-aligned with the hero copy (desktop) */}
           <div className="hidden lg:flex justify-center items-center">
             <div className="w-full max-w-[540px]">
               <ImageCarousel images={siteConfig.heroImages} alt={siteConfig.brandName} />
