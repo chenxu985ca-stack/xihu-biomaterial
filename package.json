@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "node --test tests/*.test.js",
+    "deploy:aliyun": "set -a && . ./.env.aliyun && set +a && VITE_BASE=/ npm run build && node deploy-aliyun.cjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.106.2",
@@ -15,7 +17,9 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
+    "@alicloud/pop-core": "^1.8.0",
     "@vitejs/plugin-react": "^4.3.0",
+    "ali-oss": "^6.23.0",
     "autoprefixer": "^10.4.20",
     "cos-nodejs-sdk-v5": "^2.15.4",
     "postcss": "^8.4.49",

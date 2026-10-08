@@ -10,21 +10,15 @@
  */
 import { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import { getSiteSettings } from '../lib/db';
+import { defaultSettings, mergeSiteSettings } from './mergeSiteSettings';
 import {
-  siteConfig as defaultSiteConfig,
   navLinks as defaultNavLinks,
-  aboutContent as defaultAboutContent,
-  contactContent as defaultContactContent,
-  footerContent as defaultFooterContent,
 } from '../data/siteContent';
 
 /* 用默认值初始化 Context，即使 Provider 还没挂载也能安全读取 */
 const defaults = {
-  siteConfig: defaultSiteConfig,
+  ...defaultSettings,
   navLinks: defaultNavLinks,
-  aboutContent: defaultAboutContent,
-  contactContent: defaultContactContent,
-  footerContent: defaultFooterContent,
   loading: false,
 };
 
@@ -36,19 +30,15 @@ export function SiteSettingsProvider({ children }) {
 
   useEffect(() => {
     getSiteSettings().then(({ data }) => {
-      if (data && data.siteConfig) {
+      if (data) {
         // 合并：先展开默认值再覆盖 DB 数据，确保新字段不丢
         setSettings({
-          siteConfig: { ...defaultSiteConfig, ...(data.siteConfig || {}) },
+          ...mergeSiteSettings(data),
           navLinks: defaultNavLinks, // 导航一般不改，保持静态
-          aboutContent: { ...defaultAboutContent, ...(data.aboutContent || {}) },
-          contactContent: { ...defaultContactContent, ...(data.contactContent || {}) },
-          footerContent: { ...defaultFooterContent, ...(data.footerContent || {}) },
           loading: false,
         });
-      } else {
-        setLoading(false);
       }
+      setLoading(false);
     }).catch(() => {
       // Supabase 不可用 → 静态默认值
       setLoading(false);

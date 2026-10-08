@@ -95,4 +95,11 @@ INSERT INTO site_settings (key, value) VALUES
 ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
 
 ALTER TABLE site_settings ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "管理员可读写设置" ON site_settings FOR ALL USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "管理员可读写设置" ON site_settings;
+DROP POLICY IF EXISTS "public_read_settings" ON site_settings;
+DROP POLICY IF EXISTS "admin_manage_settings" ON site_settings;
+CREATE POLICY "public_read_settings" ON site_settings FOR SELECT TO anon, authenticated USING (true);
+-- 先执行 supabase/user_roles.sql，并为管理员分配 admin 角色。
+CREATE POLICY "admin_manage_settings" ON site_settings FOR ALL TO authenticated
+  USING (EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role = 'admin'))
+  WITH CHECK (EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role = 'admin'));

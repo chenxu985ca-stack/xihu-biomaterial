@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Phone, MapPin, Mail, Globe, User, Building2, MessageSquare, Package, Send, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { useSiteSettings } from '../data/SiteSettingsContext';
 import { submitContactForm } from '../lib/db';
+import { validateContactForm as validate } from '../lib/contactForm';
 import SectionHeading from './SectionHeading';
 import ScrollReveal from './ScrollReveal';
 
@@ -15,14 +16,6 @@ const formFields = [
 
 const initialForm = { name: '', company: '', phone: '', interest: '', message: '' };
 const initialErrors = {};
-
-function validate(form) {
-  const errors = {};
-  if (!form.name || form.name.trim().length < 2) errors.name = '请输入您的姓名';
-  if (!form.phone || !/^1[3-9]\d{9}$|^0\d{2,3}-?\d{7,8}$/.test(form.phone)) errors.phone = '请输入有效的电话号码';
-  if (!form.message || form.message.trim().length < 5) errors.message = '请简要描述您的需求（至少5个字）';
-  return errors;
-}
 
 export default function ContactSection() {
   const { contactContent } = useSiteSettings();
@@ -48,6 +41,7 @@ export default function ContactSection() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (submitting) return;
     const validationErrors = validate(form);
     setErrors(validationErrors);
     setTouched({ name: true, company: true, phone: true, message: true });

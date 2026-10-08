@@ -103,10 +103,14 @@ END $$;
 -- 第3步：导入种子数据
 -- ============================================================
 
--- 清空旧数据（如果有）
-DELETE FROM products;
-DELETE FROM product_categories;
-DELETE FROM news;
+-- 仅用于首次初始化，避免误运行时清空线上编辑过的内容。
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM products)
+    OR EXISTS (SELECT 1 FROM product_categories)
+    OR EXISTS (SELECT 1 FROM news) THEN
+    RAISE EXCEPTION '已有网站内容，停止导入种子数据。请使用 migrations 更新数据库。';
+  END IF;
+END $$;
 
 -- 产品分类（12类，覆盖正畸全流程）
 INSERT INTO product_categories (name, name_en, slug, description, icon, sort_order) VALUES

@@ -117,7 +117,7 @@ export default function NewsSection() {
       if (err) { setError(err); setLoading(false); return; }
       setNews(data || []);
       setLoading(false);
-    });
+    }).catch((err) => { setError(err); setLoading(false); });
   }, []);
 
   return (

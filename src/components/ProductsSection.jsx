@@ -267,7 +267,7 @@ export default function ProductsSection() {
       setCategories(data || []);
       if (data?.length > 0) setActiveCatId(data[0].id);
       setLoading(false);
-    });
+    }).catch((err) => { setError(err); setLoading(false); });
   }, []);
 
   useEffect(() => {
@@ -275,11 +275,16 @@ export default function ProductsSection() {
     let cancelled = false;
     setShowAll(false);
     setProducts([]);
+    setError(null);
     setProductsLoading(true);
     getProductsByCategory(activeCatId).then(({ data, error: err }) => {
       if (cancelled) return;
       if (err) { setError(err); setProductsLoading(false); return; }
       setProducts(data || []);
+      setProductsLoading(false);
+    }).catch((err) => {
+      if (cancelled) return;
+      setError(err);
       setProductsLoading(false);
     });
     return () => { cancelled = true; };
@@ -337,7 +342,7 @@ export default function ProductsSection() {
         )}
 
         {/* Main content: sidebar + product area */}
-        {!loading && !error && categories.length > 0 && (
+        {!loading && categories.length > 0 && (
           <div className="mt-14 lg:flex lg:gap-10">
             {/* === DESKTOP SIDEBAR === */}
             <ScrollReveal delay={100}>

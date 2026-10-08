@@ -9,6 +9,7 @@
 import { useState, useEffect } from 'react';
 import { Save, Loader2, CheckCircle, AlertCircle, Plus, Trash2, ImageIcon } from 'lucide-react';
 import { getSiteSettings, updateSiteSetting, uploadHeroImage } from '../lib/db';
+import { mergeSiteSettings } from '../data/mergeSiteSettings';
 
 const SECTION_KEYS = [
   { key: 'siteConfig',    label: '公司信息',   desc: '品牌名称、联系方式、统计数据、资质' },
@@ -17,25 +18,6 @@ const SECTION_KEYS = [
   { key: 'footerContent', label: '底部信息',   desc: '公司简介、ICP备案、快速链接' },
 ];
 
-/** 默认空结构，防止编辑时字段缺失 */
-const DEFAULTS = {
-  siteConfig: {
-    companyName: '', brandName: '', nameEN: '', founded: 2020,
-    phone: '', email: '', address: '',
-    slogan: '', tagline: '', heroDesc: '',
-    stats: [], achievements: [], heroImages: [], footerQrImage: '',
-  },
-  aboutContent: {
-    heading: '', subtitle: '', history: [], mission: '', vision: '',
-  },
-  contactContent: {
-    heading: '', subtitle: '', contactItems: [], formFields: {}, productInterests: [],
-  },
-  footerContent: {
-    description: '', quickLinks: [], icp: '', copyright: '',
-  },
-};
-
 export default function SettingsManager() {
   const [activeKey, setActiveKey] = useState('siteConfig');
   const [settings, setSettings] = useState(null);
@@ -43,23 +25,15 @@ export default function SettingsManager() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState(null);
+  const [loadError, setLoadError] = useState(false);
 
   // 加载设置
   useEffect(() => {
     setLoading(true);
-    getSiteSettings().then(({ data }) => {
-      if (data) {
-        // 合并：有 DB 数据用 DB，否则用默认空结构
-        const merged = {};
-        for (const { key } of SECTION_KEYS) {
-          merged[key] = { ...DEFAULTS[key], ...(data[key] || {}) };
-        }
-        setSettings(merged);
-      } else {
-        setSettings(DEFAULTS);
-      }
-      setLoading(false);
-    });
+    getSiteSettings().then(({ data, error }) => {
+      if (error) { setLoadError(true); return; }
+      setSettings(mergeSiteSettings(data));
+    }).catch(() => setLoadError(true)).finally(() => setLoading(false));
   }, []);
 
   const markDirty = (key) => setDirty((d) => ({ ...d, [key]: true }));
@@ -114,14 +88,18 @@ export default function SettingsManager() {
   };
 
   const handleSave = async () => {
+    if (saving) return;
+    const key = activeKey;
     setSaving(true);
-    const { error } = await updateSiteSetting(activeKey, settings[activeKey]);
-    setSaving(false);
-    if (error) {
-      setToast({ type: 'error', message: '保存失败: ' + error.message });
-    } else {
-      markClean(activeKey);
-      setToast({ type: 'success', message: `${SECTION_KEYS.find(s => s.key === activeKey)?.label} 已保存` });
+    try {
+      const { error } = await updateSiteSetting(key, settings[key]);
+      if (error) throw error;
+      markClean(key);
+      setToast({ type: 'success', message: `${SECTION_KEYS.find(s => s.key === key)?.label} 已保存` });
+    } catch (error) {
+      setToast({ type: 'error', message: '保存失败: ' + (error.message || error) });
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -134,6 +112,10 @@ export default function SettingsManager() {
   }
 
   const section = settings?.[activeKey];
+
+  if (loadError) {
+    return <p className="py-10 text-center text-sm text-red-600">设置加载失败，请刷新重试。为避免覆盖已有内容，暂时不能编辑。</p>;
+  }
 
   return (
     <div className="space-y-6">
@@ -173,7 +155,7 @@ export default function SettingsManager() {
       </div>
 
       {/* Editor panels */}
-      <div className="rounded-xl border border-stone-200 bg-white p-6">
+      <fieldset disabled={saving} className="rounded-xl border border-stone-200 bg-white p-6">
         {activeKey === 'siteConfig' && section && (
           <SiteConfigEditor section={section} updateField={(path, val) => updateField('siteConfig', path, val)}
             updateArrayItem={(arr, i, f, v) => updateArrayItem('siteConfig', arr, i, f, v)}
@@ -213,7 +195,7 @@ export default function SettingsManager() {
             保存设置
           </button>
         </div>
-      </div>
+      </fieldset>
     </div>
   );
 }

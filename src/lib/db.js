@@ -500,6 +500,51 @@ async function normalizeImage(file, width = 600, height = 450) {
   });
 }
 
+/**
+ * 压缩首页展示图：限制最长边并转换为 WebP，保留原始宽高比。
+ * 首页使用 object-cover 展示，因此无需在上传时裁切图片。
+ */
+async function optimizeHeroImage(file, maxWidth = 1600, maxHeight = 1067) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+
+      const scale = Math.min(maxWidth / img.width, maxHeight / img.height, 1);
+      const width = Math.max(1, Math.round(img.width * scale));
+      const height = Math.max(1, Math.round(img.height * scale));
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) {
+            reject(new Error('首页图片处理失败'));
+            return;
+          }
+          resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.webp'), {
+            type: 'image/webp',
+            lastModified: Date.now(),
+          }));
+        },
+        'image/webp',
+        0.82,
+      );
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error('首页图片加载失败'));
+    };
+
+    img.src = objectUrl;
+  });
+}
+
 // ============================================================
 // 图片上传
 // ============================================================
@@ -524,13 +569,14 @@ export async function uploadImage(file, bucket = 'products') {
     normalized = file;
   }
 
-  const fileName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`;
+  const ext = IMAGE_EXTENSIONS[normalized.type];
+  const fileName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
 
   const { error } = await supabase.storage
     .from(bucket)
     .upload(fileName, normalized, {
       cacheControl: '31536000',
-      contentType: 'image/jpeg',
+      contentType: normalized.type,
     });
 
   if (error) return { data: null, error };
@@ -541,7 +587,7 @@ export async function uploadImage(file, bucket = 'products') {
 }
 
 /**
- * 上传首页展示图片（原始尺寸，不压缩）
+ * 上传首页展示图片（最长边限制为 1600×1067，并转换为 WebP）
  * @param {File} file - 图片文件
  * @returns {{ data: { url: string } | null, error: any }}
  */
@@ -550,15 +596,23 @@ export async function uploadHeroImage(file) {
   const validationError = validateImageFile(file);
   if (validationError) return { data: null, error: validationError };
 
-  const ext = IMAGE_EXTENSIONS[file.type] || 'jpg';
+  let optimized;
+  try {
+    optimized = await optimizeHeroImage(file);
+  } catch (err) {
+    console.error('首页图片压缩失败，使用原图上传:', err);
+    optimized = file;
+  }
+
+  const ext = IMAGE_EXTENSIONS[optimized.type] || 'jpg';
   const fileName = `hero-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
 
   // 复用 products bucket（已有上传策略）
   const { error } = await supabase.storage
     .from('products')
-    .upload(fileName, file, {
+    .upload(fileName, optimized, {
       cacheControl: '31536000',
-      contentType: file.type,
+      contentType: optimized.type,
     });
 
   if (error) return { data: null, error };

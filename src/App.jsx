@@ -9,7 +9,7 @@ import Footer from './components/Footer';
 import AdminLogin from './components/AdminLogin';
 import { SiteSettingsProvider } from './data/SiteSettingsContext';
 import NavForceHideContext from './data/NavForceHideContext';
-import { getAdminSession, getUserRole } from './lib/db';
+import { getAdminSession, getUserRole, onAuthStateChange } from './lib/db';
 
 // AdminDashboard is ~60KB — only loaded when user visits /admin
 const AdminDashboard = lazy(() => import('./components/AdminDashboard'));
@@ -47,14 +47,26 @@ function AdminApp() {
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    getAdminSession().then(async ({ session: s }) => {
+    let active = true;
+    const applySession = async (s) => {
+      if (!active) return;
       setSession(s);
       if (s?.user?.id) {
         const { role: r } = await getUserRole(s.user.id);
+        if (!active) return;
         setRole(r);
       }
       setChecking(false);
+    };
+    getAdminSession().then(({ session: s }) => applySession(s));
+    const authSubscription = onAuthStateChange((_event, s) => {
+      // Supabase recommends keeping auth callbacks synchronous; defer the role query.
+      queueMicrotask(() => applySession(s));
     });
+    return () => {
+      active = false;
+      authSubscription?.subscription?.unsubscribe?.();
+    };
   }, []);
 
   if (checking) {

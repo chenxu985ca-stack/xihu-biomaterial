@@ -16,6 +16,10 @@ export default function ImageCarousel({ images = [], alt = '西湖巴尔' }) {
 
   const count = images?.length || 0;
 
+  useEffect(() => {
+    setCurrent((index) => count === 0 ? 0 : Math.min(index, count - 1));
+  }, [count]);
+
   const goTo = useCallback((index) => {
     if (index === current || transitioning) return;
     setTransitioning(true);
@@ -83,17 +87,16 @@ export default function ImageCarousel({ images = [], alt = '西湖巴尔' }) {
           onMouseEnter={() => setPaused(true)}
           onMouseLeave={() => setPaused(false)}
         >
-          {/* Images with fade transition */}
-          {images.map((url, i) => (
-            <img
-              key={url}
-              src={url}
-              alt={`${alt} - ${i + 1}`}
-              className="absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ease-in-out"
-              style={{ opacity: i === current ? 1 : 0 }}
-              loading={i === 0 ? 'eager' : 'lazy'}
-            />
-          ))}
+          {/* 首次只下载当前图片，避免轮播中的大图一起占用带宽 */}
+          <img
+            key={images[current]}
+            src={images[current]}
+            alt={`${alt} - ${current + 1}`}
+            className="absolute inset-0 h-full w-full object-cover"
+            loading="eager"
+            fetchPriority={current === 0 ? 'high' : 'auto'}
+            decoding="async"
+          />
 
           {/* Bottom gradient overlay for dots readability */}
           <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-black/15 to-transparent" />

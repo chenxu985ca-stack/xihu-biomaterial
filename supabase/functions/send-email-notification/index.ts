@@ -14,6 +14,15 @@ import { Resend } from 'npm:resend@4';
 const NOTIFY_EMAIL = Deno.env.get('NOTIFY_EMAIL') || 'chenxu985ca@gmail.com';
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
 
+function escapeHtml(value: unknown) {
+  return String(value ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
+
 Deno.serve(async (req) => {
   if (req.method !== 'POST') {
     return new Response(JSON.stringify({ error: 'Method not allowed' }), {
@@ -34,6 +43,11 @@ Deno.serve(async (req) => {
 
   const record = body.record || body;
   const { name, company, phone, interest, message } = record;
+  const safeName = escapeHtml(name);
+  const safeCompany = escapeHtml(company || '个人');
+  const safePhone = escapeHtml(phone);
+  const safeInterest = escapeHtml(interest);
+  const safeMessage = escapeHtml(message);
 
   // 降级模式：未配置 API Key 时仅打印日志
   if (!RESEND_API_KEY) {
@@ -50,32 +64,32 @@ Deno.serve(async (req) => {
   const { data, error } = await resend.emails.send({
     from: '西湖巴尔官网 <onboarding@resend.dev>',
     to: NOTIFY_EMAIL,
-    subject: `【官网咨询】${name} — ${company || '个人'}`,
+    subject: `【官网咨询】${String(name || '').replace(/[\r\n]/g, ' ').slice(0, 100)} — ${String(company || '个人').replace(/[\r\n]/g, ' ').slice(0, 100)}`,
     html: `
       <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
         <h2 style="color: #1A1D20; border-bottom: 2px solid #0052CC; padding-bottom: 12px;">📬 新的商务咨询</h2>
         <table style="width: 100%; border-collapse: collapse;">
           <tr>
             <td style="padding: 10px 12px; color: #6B737D; width: 60px;">姓名</td>
-            <td style="padding: 10px 12px; color: #1A1D20; font-weight: 600;">${name}</td>
+            <td style="padding: 10px 12px; color: #1A1D20; font-weight: 600;">${safeName}</td>
           </tr>
           <tr style="background: #F5F5F5;">
             <td style="padding: 10px 12px; color: #6B737D;">单位</td>
-            <td style="padding: 10px 12px; color: #1A1D20; font-weight: 600;">${company || '未填写'}</td>
+            <td style="padding: 10px 12px; color: #1A1D20; font-weight: 600;">${safeCompany}</td>
           </tr>
           <tr>
             <td style="padding: 10px 12px; color: #6B737D;">电话</td>
-            <td style="padding: 10px 12px; color: #1A1D20; font-weight: 600;"><a href="tel:${phone}" style="color: #0052CC;">${phone}</a></td>
+            <td style="padding: 10px 12px; color: #1A1D20; font-weight: 600;"><a href="tel:${safePhone}" style="color: #0052CC;">${safePhone}</a></td>
           </tr>
           ${interest ? `
           <tr>
             <td style="padding: 10px 12px; color: #6B737D;">兴趣</td>
-            <td style="padding: 10px 12px; color: #1A1D20; font-weight: 600;">${interest}</td>
+            <td style="padding: 10px 12px; color: #1A1D20; font-weight: 600;">${safeInterest}</td>
           </tr>
           ` : ''}
           <tr style="background: #F5F5F5;">
             <td style="padding: 10px 12px; color: #6B737D; vertical-align: top;">需求</td>
-            <td style="padding: 10px 12px; color: #1A1D20;">${message}</td>
+            <td style="padding: 10px 12px; color: #1A1D20;">${safeMessage}</td>
           </tr>
         </table>
         <p style="color: #9CA3AF; font-size: 12px; margin-top: 24px; text-align: center;">
