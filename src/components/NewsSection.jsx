@@ -12,7 +12,7 @@ const tagColors = {
   '动态': 'border-stone-200 text-graphite-500 bg-stone-50',
 };
 
-const INITIAL_DISPLAY = 8;
+const INITIAL_DISPLAY = 4;
 
 /** 新闻详情弹窗 */
 function NewsModal({ item, onClose }) {

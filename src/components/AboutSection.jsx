@@ -63,12 +63,12 @@ export default function AboutSection() {
         </ScrollReveal>
 
         {/* Timeline */}
-        <div className="mt-24">
+        <div className="mt-16">
           <div className="relative mx-auto max-w-4xl">
             {/* Timeline center line */}
             <div className="absolute left-4 top-0 h-full w-px bg-gradient-to-b from-sapphire/30 via-stone-300 to-transparent md:left-1/2 md:-translate-x-px" />
 
-            <div className="space-y-12">
+            <div className="space-y-8">
               {aboutContent.history.map((item, i) => {
                 const Icon = timelineIcons[i] || null;
                 return (
@@ -104,14 +104,14 @@ export default function AboutSection() {
 
         {/* Vision */}
         <ScrollReveal delay={500}>
-          <div className="mx-auto mt-20 max-w-2xl text-center">
+          <div className="mx-auto mt-14 max-w-2xl text-center">
             <div className="precision-line mx-auto mb-4" />
             <p className="font-heading text-lg text-graphite-500 italic">{aboutContent.vision}</p>
           </div>
         </ScrollReveal>
 
         {/* Achievements grid */}
-        <div className="mx-auto mt-16 grid max-w-3xl gap-4 sm:grid-cols-2">
+        <div className="mx-auto mt-12 grid max-w-3xl gap-4 sm:grid-cols-2">
           {siteConfig.achievements.map((item, i) => (
             <ScrollReveal key={item} delay={550 + i * 80}>
               <div className="flex items-center gap-3 rounded-lg border border-stone-200/80 bg-stone-50/80 px-5 py-4 shadow-sm transition-all duration-300 hover:bg-white hover:shadow-md">

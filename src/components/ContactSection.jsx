@@ -86,7 +86,7 @@ export default function ContactSection() {
           <SectionHeading heading={contactContent.heading} subtitle={contactContent.subtitle} />
         </ScrollReveal>
 
-        <div className="mx-auto mt-16 grid max-w-5xl gap-10 lg:grid-cols-5">
+        <div className="mx-auto mt-12 grid max-w-5xl gap-10 lg:grid-cols-5">
           {/* Contact info cards */}
           <div className="space-y-4 lg:col-span-2">
             {contactContent.contactItems.map((item, i) => {

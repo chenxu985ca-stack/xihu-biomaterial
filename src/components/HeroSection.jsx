@@ -98,9 +98,9 @@ export default function HeroSection() {
         </div>
 
         {/* Stats row */}
-        <div className="mt-10 flex flex-nowrap items-center justify-between gap-8 overflow-x-auto md:mt-14">
+        <div className="mt-10 grid grid-cols-2 gap-x-6 gap-y-5 md:mt-14 md:flex md:items-center md:justify-between md:gap-8">
           {siteConfig.stats.map((stat) => (
-            <div key={stat.label} className="flex flex-shrink-0 items-center gap-3">
+            <div key={stat.label} className="flex min-w-0 items-center gap-3">
               <span className="font-heading text-2xl font-bold text-graphite-900 sm:text-3xl tabular-nums">
                 {stat.value}
               </span>

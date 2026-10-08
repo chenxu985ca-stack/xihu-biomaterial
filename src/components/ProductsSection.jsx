@@ -379,34 +379,37 @@ export default function ProductsSection() {
             </ScrollReveal>
 
             {/* === MOBILE CATEGORY BAR === */}
-            <div className="lg:hidden mb-8 -mx-4 px-4 overflow-x-auto [&::-webkit-scrollbar]:hidden">
-              <div className="flex gap-2 min-w-max">
-                {categories.map((cat) => {
-                  const isActive = activeCatId === cat.id;
-                  return (
-                    <button
-                      key={cat.id}
-                      onClick={() => setActiveCatId(cat.id)}
-                      className={`flex-shrink-0 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium tracking-precision transition-all duration-300 ${
-                        isActive
-                          ? 'border-sapphire-400 bg-sapphire-50 text-sapphire-600 shadow-sm'
-                          : 'border-stone-200 bg-white text-graphite-500 hover:border-stone-300 hover:text-graphite-700'
-                      }`}
-                    >
-                      {cat.name}
-                    </button>
-                  );
-                })}
+            <div className="relative mb-8 lg:hidden">
+              <div className="-mx-4 overflow-x-auto px-4 pr-12 [&::-webkit-scrollbar]:hidden">
+                <div className="flex min-w-max gap-2">
+                  {categories.map((cat) => {
+                    const isActive = activeCatId === cat.id;
+                    return (
+                      <button
+                        key={cat.id}
+                        onClick={() => setActiveCatId(cat.id)}
+                        className={`flex-shrink-0 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium tracking-precision transition-all duration-300 ${
+                          isActive
+                            ? 'border-sapphire-400 bg-sapphire-50 text-sapphire-600 shadow-sm'
+                            : 'border-stone-200 bg-white text-graphite-500 hover:border-stone-300 hover:text-graphite-700'
+                        }`}
+                      >
+                        {cat.name}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
+              <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-stone-50 to-transparent" />
             </div>
 
             {/* === PRODUCT AREA === */}
             <div className="flex-1 min-w-0">
               {activeCat && (
                 <div className="mb-8 flex items-center gap-3">
-                  <div className="h-px flex-1 bg-gradient-to-r from-transparent via-stone-300 to-transparent" />
-                  <p className="text-sm text-graphite-500 whitespace-nowrap">{activeCat.description}</p>
-                  <div className="h-px flex-1 bg-gradient-to-r from-transparent via-stone-300 to-transparent" />
+                  <div className="hidden h-px flex-1 bg-gradient-to-r from-transparent via-stone-300 to-transparent sm:block" />
+                  <p className="text-center text-sm leading-relaxed text-graphite-500">{activeCat.description}</p>
+                  <div className="hidden h-px flex-1 bg-gradient-to-r from-transparent via-stone-300 to-transparent sm:block" />
                 </div>
               )}
 
