@@ -446,9 +446,10 @@ export async function deleteSubmission(id) {
  * @param {File} file - 原始文件
  * @param {number} width - 画布宽度
  * @param {number} height - 画布高度
+ * @param {boolean} watermark - 是否添加产品防盗水印
  * @returns {Promise<File>} 处理后的 JPEG 文件
  */
-async function normalizeImage(file, width = 600, height = 450) {
+async function normalizeImage(file, width = 600, height = 450, watermark = false) {
   return new Promise((resolve, reject) => {
     const img = new Image();
     const objectUrl = URL.createObjectURL(file);
@@ -473,6 +474,24 @@ async function normalizeImage(file, width = 600, height = 450) {
       const sy = (height - sh) / 2;
 
       ctx.drawImage(img, sx, sy, sw, sh);
+
+      if (watermark) {
+        const text = '西湖巴尔 · xihubiom.cn';
+        ctx.save();
+        ctx.translate(width / 2, height / 2);
+        ctx.rotate(-Math.PI / 7);
+        ctx.fillStyle = 'rgba(30, 64, 110, 0.14)';
+        ctx.font = '600 18px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        for (let y = -height; y <= height; y += 105) {
+          for (let x = -width; x <= width; x += 250) {
+            ctx.fillText(text, x, y);
+          }
+        }
+        ctx.restore();
+      }
 
       canvas.toBlob(
         (blob) => {
@@ -563,7 +582,7 @@ export async function uploadImage(file, bucket = 'products') {
   // 标准化图片尺寸
   let normalized;
   try {
-    normalized = await normalizeImage(file);
+    normalized = await normalizeImage(file, 600, 450, bucket === 'products');
   } catch (err) {
     console.error('图片标准化失败，使用原图上传:', err);
     normalized = file;

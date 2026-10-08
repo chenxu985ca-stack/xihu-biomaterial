@@ -104,7 +104,9 @@ function ImageUpload({ currentUrl, onUploaded, bucket = 'products' }) {
 
   return (
     <div>
-      <label className="mb-1.5 block text-xs font-medium text-graphite-500">上传图片</label>
+      <label className="mb-1.5 block text-xs font-medium text-graphite-500">
+        上传图片{bucket === 'products' ? '（自动添加防盗水印）' : ''}
+      </label>
       {preview ? (
         <div className="relative mb-2 overflow-hidden rounded-lg border border-stone-200">
           <img src={preview} alt="预览" className="h-36 w-full object-cover" />
