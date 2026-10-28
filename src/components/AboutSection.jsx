@@ -43,7 +43,6 @@ export default function AboutSection() {
               </div>
               <div>
                 <p className="font-heading text-xl font-bold text-graphite-900">西湖巴尔</p>
-                <p className="text-xs text-graphite-400">Westlake Biom</p>
               </div>
             </div>
           </div>

@@ -81,9 +81,6 @@ export default function Navbar({ forceHide = false }) {
                 <span className="font-heading text-lg font-bold tracking-precision text-graphite-900 leading-none">
                   西湖巴尔
                 </span>
-                <span className="text-[10px] font-medium uppercase tracking-[0.08em] text-graphite-400 mt-0.5">
-                  Westlake Biom
-                </span>
               </div>
             </a>
 
