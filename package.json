@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:virtual-host": "VITE_BASE=/ vite build",
     "preview": "vite preview",
     "test": "node --test tests/*.test.js",
     "deploy:aliyun": "set -a && . ./.env.aliyun && set +a && VITE_BASE=/ npm run build && node deploy-aliyun.cjs"
